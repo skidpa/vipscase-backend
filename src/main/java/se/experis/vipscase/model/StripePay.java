@@ -1,5 +1,8 @@
 package se.experis.vipscase.model;
 
+/**
+ * StripePay class to help handle payment settings
+ */
 public class StripePay {
 
     /*public enum Currency {
