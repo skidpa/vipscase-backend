@@ -44,7 +44,8 @@ public class CheckoutController {
         // set stuff like user id to be able to track payments to set order id would be nice aswell.
         // will be visible in payment info on stripe
         Map<String, String> initalMetadata = new HashMap<String, String>();
-        initalMetadata.put("whatever", "1234"); // Can place stuff in meta data whatever we want...
+        initalMetadata.put("customer_id", "1234"); // Can place stuff in meta data whatever we want...
+        initalMetadata.put("order_id", "1");
         chargeParams.put("metadata", initalMetadata);
 
 
