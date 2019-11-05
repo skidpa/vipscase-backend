@@ -28,7 +28,7 @@
 .idea/**/gradle.xml
 .idea/**/libraries
 application.properties
-/src/main/resources/application.properties
+C:\Users\pakarl\Desktop\Tasks\Case\vipscase-backend\src\main\resources\application.properties
 src/main/resources/application.properties
 spring-openid/src/main/resources/application.properties
 .recommenders/
