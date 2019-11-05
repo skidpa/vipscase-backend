@@ -21,9 +21,14 @@ public class CheckoutController {
     @Value("${STRIPE_SECRET_KEY}")
     private String stripeKey;
 
+    /**
+     * Method to handle payments with stripe requires params in the pay param.
+     * @param response sets the http response code
+     * @param pay the request as json
+     */
     @PostMapping("stripe/checkout")
     @ResponseBody
-    public void stripeTest(HttpServletResponse response, @RequestBody StripePay pay){
+    public void stripePayment(HttpServletResponse response, @RequestBody StripePay pay){
 
         //System.out.println(test.toString());
 
