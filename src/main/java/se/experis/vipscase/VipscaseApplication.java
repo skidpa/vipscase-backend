@@ -19,9 +19,9 @@ public class VipscaseApplication {
 		SpringApplication.run(VipscaseApplication.class, args);
 
 
-		Database db = new Database();
+		//Database db = new Database();
 
-		Connection conn = db.connectToDb();
+		//Connection conn = db.connectToDb();
 		//String selectQ = "SELECT * FROM products";
 		//ArrayList<Object[]> results = db.retrieveQuery(conn, selectQ);
 		//System.out.println(Arrays.toString(results.get(0)));
@@ -35,7 +35,7 @@ public class VipscaseApplication {
 		String city = "testtown";
 		int birthYear = 20190101;
 
-		db.insertQuery(conn, name, pass, mail, lname, street, postcode, city, birthYear);
+		//db.insertQuery(conn, name, pass, mail, lname, street, postcode, city, birthYear);
 
 	}
 
