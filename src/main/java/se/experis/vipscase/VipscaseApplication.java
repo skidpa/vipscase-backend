@@ -21,9 +21,6 @@ public class VipscaseApplication {
 
 		Database db = new Database();
 
-
-
-
 		Connection conn = db.connectToDb();
 		//String selectQ = "SELECT * FROM products";
 		//ArrayList<Object[]> results = db.retrieveQuery(conn, selectQ);
