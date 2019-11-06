@@ -94,8 +94,47 @@ public class Database {
 
     }
 
+    public int addOrder(Connection conn, int customer_id) {
+        String insertQ = "INSERT INTO orders (customer_id) VALUES ('"+ customer_id + "')";
+        System.out.println(insertQ);
 
-    Connection connectToDb() {
+        int order_id = 0;
+        try {
+            PreparedStatement pst = conn.prepareStatement(insertQ, Statement.RETURN_GENERATED_KEYS);
+            pst.execute();
+
+            ResultSet getId = pst.getGeneratedKeys();
+            if(getId.next()){
+                System.out.println("the newly inserted id: " + getId.getInt(1));
+                order_id = getId.getInt(1);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return order_id;
+    }
+
+    public void addOrderDetails(Connection conn, int order_id, ArrayList product_id, String status) {
+
+        try {
+            for (Object prod_id : product_id) {
+                String insertQ = "INSERT INTO order_details (order_id, product_id, status) " +
+                        "VALUES (" + "'"+ order_id + "', '"+ prod_id +"', '" + status + "')";
+                PreparedStatement pst = conn.prepareStatement(insertQ);
+                pst.execute();
+            }
+
+            /*PreparedStatement pst = conn.prepareStatement(insertQ);
+            pst.execute();*/
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    public Connection connectToDb() {
         System.out.println("Connecting..");
         String url = "jdbc:postgresql://localhost:5432/vipscase";
         String user = "postgres";
