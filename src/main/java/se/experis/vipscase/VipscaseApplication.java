@@ -26,7 +26,7 @@ public class VipscaseApplication {
 		//ArrayList<Object[]> results = db.retrieveQuery(conn, selectQ);
 		//System.out.println(Arrays.toString(results.get(0)));
 
-		String name = "Test13";
+		/*String name = "Test13";
 		String pass = "Pass132";
 		String mail = "nej@hotmail.com";
 		String lname = "testsson";
@@ -35,7 +35,7 @@ public class VipscaseApplication {
 		String city = "testtown";
 		int birthYear = 20190101;
 
-		db.insertQuery(conn, name, pass, mail, lname, street, postcode, city, birthYear);
+		db.insertQuery(conn, name, pass, mail, lname, street, postcode, city, birthYear);*/
 
 	}
 
