@@ -35,13 +35,16 @@ public class CheckoutController {
         System.out.println(stripeKey);
         Stripe.apiKey = stripeKey;
 
+
+
+
         Map<String, Object> chargeParams = new HashMap<String,Object>();
         chargeParams.put("amount", pay.getAmount());
         chargeParams.put("currency", "sek");
         chargeParams.put("description", pay.getDescription());
         chargeParams.put("source", pay.getStripeToken()); // tok_xx from frontend
 
-        // set stuff like user id to be able to track payments to set order id would be nice aswell.
+        // set stuff like user id to be able to track payments to set order id would be nice as well.
         // will be visible in payment info on stripe
         Map<String, String> initalMetadata = new HashMap<String, String>();
         initalMetadata.put("customer_id", "1234"); // Can place stuff in meta data whatever we want...
