@@ -11,6 +11,13 @@ public class Database {
 
     }
 
+    /**
+     *
+     * @param conn, The connection provided from connectToDb()
+     * @param query, String of queries
+     * @return Returns an ArrayList of objects, containing the response from the database
+     */
+
     ArrayList<Object[]> retrieveQuery(Connection conn, String query) {
         ArrayList<Object[]> results = new ArrayList<Object[]>();
 
@@ -60,7 +67,18 @@ public class Database {
 
     }
 
-
+    /**
+     *
+     * @param conn, The connection provided from connectToDb()
+     * @param cname, User's name
+     * @param cpass, -||- password
+     * @param mail, -||- mail
+     * @param lname, -||- lastname
+     * @param sname, -||- street
+     * @param pcode, -||- postcode
+     * @param city, -||- city
+     * @param byear, -||- birthyear-month-day
+     */
     void insertQuery(Connection conn, String cname, String cpass, String mail, String lname, String sname, int pcode, String city, int byear) {
         String insertQ = "INSERT INTO customers (customername, customerpass, email, lastname, streetname, postcode, city, birthyear) VALUES (" +
                 "'"+cname + "', '"+ cpass +"', '" + mail + "', '" + lname +"', '" +
