@@ -110,9 +110,11 @@ public class UserOrderController {
         String dbPass = Arrays.toString(userCred.get(0));
         dbPass = dbPass.substring(1, dbPass.length() -1);
 
+        String newHashed = db.hashStuff(user.getPassword());
 
 
-        if(user.getPassword().equals(dbPass)){
+        if(newHashed.equals(dbPass)) {
+            System.out.println("Nu funkade det faktiskt");
             String usersql = "SELECT id FROM customers WHERE email='" + user.getEmail() +"'";
             userCred = db.retrieveQuery(db.connectToDb(), usersql);
             String usrid = Arrays.toString(userCred.get(0));
@@ -126,6 +128,7 @@ public class UserOrderController {
         }
         //PA
         //return null;
+
     }
 
     //Lists all orders
