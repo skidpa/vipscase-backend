@@ -19,7 +19,7 @@ public class Database {
      * @return Returns an ArrayList of objects, containing the response from the database
      */
 
-    ArrayList<Object[]> retrieveQuery(Connection conn, String query) {
+    public ArrayList<Object[]> retrieveQuery(Connection conn, String query) {
         ArrayList<Object[]> results = new ArrayList<Object[]>();
 
         
