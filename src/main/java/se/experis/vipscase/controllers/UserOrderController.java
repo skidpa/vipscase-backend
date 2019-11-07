@@ -3,19 +3,24 @@ package se.experis.vipscase.controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import org.springframework.web.bind.annotation.*;
 import se.experis.vipscase.model.Order;
 import se.experis.vipscase.model.StripePay;
 import se.experis.vipscase.model.User;
 import se.experis.vipscase.Database;
 
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
-
+@CrossOrigin(maxAge = 3600)
 @RestController
 public class UserOrderController {
     UserOrderController(){
@@ -63,6 +68,16 @@ public class UserOrderController {
 
         //charge the user
         //stripe pay stuff...
+        /* stripe session typ..
+            Map<String, Object> sessionMap = new HashMap<String,Object>();
+            sessionMap.put("userid", 1);
+            Session session = null;
+            try {
+                session = Session.create(sessionMap);
+            } catch (StripeException e) {
+                e.printStackTrace();
+            }
+            return session;*/
         System.out.println("orders placed now charge my ass");
 
         //if charge successful commit changes to db
@@ -85,9 +100,7 @@ public class UserOrderController {
 
     @PostMapping("/login")
     @ResponseBody
-    public void loginUser(@RequestBody User user) {
-
-        System.out.println(user.toString());
+    public void loginUser(HttpServletResponse response, HttpServletRequest request, @RequestBody User user) {
         Database db = new Database();
         ArrayList<Object[]> userCred = new ArrayList<>();
 
@@ -100,20 +113,28 @@ public class UserOrderController {
 
 
         if(user.getPassword().equals(dbPass)){
-            System.out.println("Wohoo loged in");
+            String usersql = "SELECT id FROM customers WHERE email='" + user.getEmail() +"'";
+            userCred = db.retrieveQuery(db.connectToDb(), usersql);
+            String usrid = Arrays.toString(userCred.get(0));
+            usrid = usrid.substring(1, usrid.length() -1);
+
+            HttpSession session = request.getSession();
+            session.setAttribute("se",usrid);
+
         } else {
             System.out.println("Hacker be Gone!");
         }
         //PA
-
+        //return null;
     }
 
     //Lists all orders
     @GetMapping("/orders")
-    public ArrayList<ArrayList<Object[]>> getOrders() {
+    public ArrayList<ArrayList<Object[]>> getOrders(HttpServletRequest request, HttpServletResponse response) {
         //Since Login isn't done, and is some what dependent on frontend, the user identification number is hard coded
         //In the future, this id should be fetched from session or local storage.
-        int userId = 10;
+        Object session = request.getSession().getAttribute("se");
+        int userId = Integer.parseInt(session.toString());
         Database db = new Database();
         String sqlQuery1 = "SELECT id FROM orders WHERE customer_id = '" + userId + "';";
         ArrayList<Object[]> results = db.retrieveQuery(db.connectToDb(), sqlQuery1);
@@ -146,13 +167,14 @@ public class UserOrderController {
     //Lists all orders
     @GetMapping("/order/{order_id}")
     @ResponseBody
-    public ArrayList<Object[]> getOrderById(@PathVariable String order_id) {
+    public ArrayList<Object[]> getOrderById(HttpServletRequest request, HttpServletResponse response, @PathVariable String order_id) {
         //Retrieves an order by its id.
         //Must only return if the order matches the current user
         //Invalid users must receive an error
         //Since Login isn't done, and is some what dependent on frontend, the user identification number is hard coded
         //In the future, this id should be fetched from session or local storage.
-        int userId = 10;
+        Object session = request.getSession().getAttribute("se");
+        int userId = Integer.parseInt(session.toString());
         Database db = new Database();
         String sqlQuery1 = "SELECT id FROM orders WHERE customer_id = '" + userId + "';";
         ArrayList<Object[]> results = db.retrieveQuery(db.connectToDb(), sqlQuery1);
@@ -175,6 +197,13 @@ public class UserOrderController {
 
         //simon
         return results2;
+    }
+
+    @GetMapping("/logout")
+    public void logout(HttpServletRequest request, HttpServletResponse response){
+        HttpSession session;
+        session = request.getSession();
+        session.invalidate();
     }
 
 
