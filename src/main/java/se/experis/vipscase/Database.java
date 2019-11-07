@@ -3,6 +3,7 @@ package se.experis.vipscase;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class Database {
 
@@ -18,7 +19,7 @@ public class Database {
      * @return Returns an ArrayList of objects, containing the response from the database
      */
 
-    ArrayList<Object[]> retrieveQuery(Connection conn, String query) {
+    public ArrayList<Object[]> retrieveQuery(Connection conn, String query) {
         ArrayList<Object[]> results = new ArrayList<Object[]>();
 
         
@@ -63,13 +64,13 @@ public class Database {
 
             } while (isResult);
         }
+        closeConnect(conn);
         return results;
 
     }
 
     /**
-     *
-     * @param conn, The connection provided from connectToDb()
+     *  @param conn, The connection provided from connectToDb()
      * @param cname, User's name
      * @param cpass, -||- password
      * @param mail, -||- mail
@@ -78,8 +79,9 @@ public class Database {
      * @param pcode, -||- postcode
      * @param city, -||- city
      * @param byear, -||- birthyear-month-day
+     * @param byear
      */
-    void insertQuery(Connection conn, String cname, String cpass, String mail, String lname, String sname, int pcode, String city, int byear) {
+    public void insertQuery(Connection conn, String cname, String cpass, String mail, String lname, String sname, int pcode, String city, String byear) {
         String insertQ = "INSERT INTO customers (customername, customerpass, email, lastname, streetname, postcode, city, birthyear) VALUES (" +
                 "'"+cname + "', '"+ cpass +"', '" + mail + "', '" + lname +"', '" +
                     sname + "', '"+ pcode +"', '" + city + "', '" + byear + "')";
@@ -88,8 +90,11 @@ public class Database {
         try {
             PreparedStatement pst = conn.prepareStatement(insertQ);
             pst.execute();
-        } catch (SQLException e) {
+            closeConnect(conn);
+
+            } catch (SQLException e) {
             e.printStackTrace();
+
         }
 
     }
@@ -97,7 +102,6 @@ public class Database {
     public int addOrder(Connection conn, int customer_id) {
         String insertQ = "INSERT INTO orders (customer_id) VALUES ('"+ customer_id + "')";
         System.out.println(insertQ);
-
         int order_id = 0;
         try {
             PreparedStatement pst = conn.prepareStatement(insertQ, Statement.RETURN_GENERATED_KEYS);
@@ -132,8 +136,7 @@ public class Database {
         }
 
     }
-
-
+  
     public Connection connectToDb() {
         System.out.println("Connecting..");
         String url = "jdbc:postgresql://localhost:5432/vipscase";
@@ -153,6 +156,16 @@ public class Database {
         }
         return conn;
 
+    }
+
+    public void closeConnect(Connection conn) {
+        try {
+            conn.close();
+            System.out.println("Connection closed..");
+        } catch (SQLException e) {
+            System.out.println("Connection not closed..");
+            e.printStackTrace();
+        }
     }
 
 
