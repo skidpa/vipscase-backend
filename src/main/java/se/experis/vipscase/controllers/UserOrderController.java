@@ -1,16 +1,11 @@
 package se.experis.vipscase.controllers;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.*;
 import se.experis.vipscase.model.Order;
 import se.experis.vipscase.model.StripePay;
-import java.sql.SQLException;
-import java.util.Map;
 import se.experis.vipscase.model.User;
 import se.experis.vipscase.Database;
 
@@ -117,14 +112,12 @@ public class UserOrderController {
     @GetMapping("/orders")
     public ArrayList<ArrayList<Object[]>> getOrders() {
         //Since Login isn't done, and is some what dependent on frontend, the user identification number is hard coded
+        //In the future, this id should be fetched from session or local storage.
         int userId = 10;
         Database db = new Database();
         String sqlQuery1 = "SELECT id FROM orders WHERE customer_id = '" + userId + "';";
         ArrayList<Object[]> results = db.retrieveQuery(db.connectToDb(), sqlQuery1);
         //Retrieves an array list of objects containing every order_id for customer.
-
-
-
 
         String newId = "";
         String id_from_orders;
@@ -152,9 +145,36 @@ public class UserOrderController {
 
     //Lists all orders
     @GetMapping("/order/{order_id}")
-    public ArrayList<Object> getOrderById() {
-        //Pa
-        return null;
+    @ResponseBody
+    public ArrayList<Object[]> getOrderById(@PathVariable String order_id) {
+        //Retrieves an order by its id.
+        //Must only return if the order matches the current user
+        //Invalid users must receive an error
+        //Since Login isn't done, and is some what dependent on frontend, the user identification number is hard coded
+        //In the future, this id should be fetched from session or local storage.
+        int userId = 10;
+        Database db = new Database();
+        String sqlQuery1 = "SELECT id FROM orders WHERE customer_id = '" + userId + "';";
+        ArrayList<Object[]> results = db.retrieveQuery(db.connectToDb(), sqlQuery1);
+        String id_from_orders;
+        String newId;
+        String sqlQuery2 = "";
+        ArrayList<Object[]> results2 = new ArrayList<>();
+        for (Object[] result : results) {
+
+            id_from_orders = Arrays.toString(result);
+            newId = id_from_orders.substring(1, id_from_orders.length() - 1);
+
+            if (newId.equals(order_id)) {
+                sqlQuery2 = "SELECT order_id, product_id, status FROM order_details WHERE order_id = '" + newId+ "';";
+                results2 = db.retrieveQuery(db.connectToDb(), sqlQuery2);
+                break;
+            }
+        }
+
+
+        //simon
+        return results2;
     }
 
 
