@@ -3,6 +3,7 @@ package se.experis.vipscase.controllers;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
+import com.stripe.model.checkout.Session;
 import com.stripe.net.RequestOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+@CrossOrigin(maxAge = 3600)
 @RestController
 public class CheckoutController {
 
@@ -61,6 +63,8 @@ public class CheckoutController {
             Charge charge = Charge.create(chargeParams, options);
             System.out.println("charge: " + charge);
             System.out.println("charge: " + charge.getStatus());
+            Session session = Session.create(chargeParams);
+            System.out.println("charge is now done...");
             response.setStatus(201);
         } catch (StripeException e){
             System.out.println("stripe exception caught");
