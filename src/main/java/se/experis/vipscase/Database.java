@@ -129,8 +129,6 @@ public class Database {
                 pst.execute();
             }
 
-            /*PreparedStatement pst = conn.prepareStatement(insertQ);
-            pst.execute();*/
         } catch (SQLException e) {
             e.printStackTrace();
         }
