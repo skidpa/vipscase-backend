@@ -50,44 +50,39 @@ public class UserOrderController {
 
     //Lists all orders
     @GetMapping("/orders")
-    public ArrayList<Object[]> getOrders() {
+    public ArrayList<ArrayList<Object[]>> getOrders() {
         //Since Login isn't done, and is some what dependent on frontend, the user identification number is hard coded
         int userId = 10;
         Database db = new Database();
         String sqlQuery1 = "SELECT id FROM orders WHERE customer_id = '" + userId + "';";
         ArrayList<Object[]> results = db.retrieveQuery(db.connectToDb(), sqlQuery1);
-        System.out.println(results.getClass().getName());
+        //Retrieves an array list of objects containing every order_id for customer.
 
-        System.out.println(results.get(0).getClass().getName());
-        System.out.println(Arrays.toString(results.get(0)));
 
 
 
         String newId = "";
         String id_from_orders;
         String sqlQuery2;
-        ArrayList<Object[]> results2 = null;
+        ArrayList<Object[]> results2 = new ArrayList<>();
+        ArrayList<ArrayList<Object[]>> finalResults = new ArrayList<>();
 
         for (int i = 0; i < results.size(); i++) {
             System.out.println("Run: " + i);
             id_from_orders = Arrays.toString(results.get(i));
             newId = id_from_orders.substring(1, id_from_orders.length()-1);
             sqlQuery2 = "SELECT order_id, product_id, status FROM order_details WHERE order_id = '" + newId + "';";
-            results2 = db.retrieveQuery(db.connectToDb(), sqlQuery2);
+            try {
+                results2 = db.retrieveQuery(db.connectToDb(), sqlQuery2);
+                finalResults.add(results2);
 
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
         }
-        System.out.println(results2.size());
 
-        for (int i = 0; i < results2.size(); i++) {
-            System.out.println(Arrays.toString(results2.get(i)));
-        }
-
-        /*String newId = id_from_orders.substring(1, id_from_orders.length()-1);
-
-        ArrayList<Object[]> results2 = db.retrieveQuery(db.connectToDb(), sqlQuery2);
-*/
-        return results2;
+        return finalResults;
     }
 
     //Lists all orders
