@@ -13,6 +13,9 @@ import java.sql.SQLException;
 import java.util.Map;
 import se.experis.vipscase.model.User;
 import se.experis.vipscase.Database;
+
+import javax.servlet.http.HttpSession;
+import javax.xml.crypto.Data;
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -87,9 +90,25 @@ public class UserOrderController {
 
     @PostMapping("/login")
     @ResponseBody
-    public void loginUser(@RequestBody Object test) {
+    public void loginUser(@RequestBody User user) {
+
+        System.out.println(user.toString());
+        Database db = new Database();
+        ArrayList<Object[]> userCred = new ArrayList<>();
+
+        Connection conn = db.connectToDb();
+        String sql = "SELECT customerpass FROM customers WHERE email='" + user.getEmail() +"'";
+        userCred = db.retrieveQuery(conn, sql);
+        String dbPass = Arrays.toString(userCred.get(0));
+        dbPass = dbPass.substring(1, dbPass.length() -1);
 
 
+
+        if(user.getPassword().equals(dbPass)){
+            System.out.println("Wohoo loged in");
+        } else {
+            System.out.println("Hacker be Gone!");
+        }
         //PA
 
     }
