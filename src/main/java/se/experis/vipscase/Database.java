@@ -1,10 +1,15 @@
 package se.experis.vipscase;
 
 
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
-
 public class Database {
 
 
@@ -82,6 +87,10 @@ public class Database {
      * @param byear
      */
     public void insertQuery(Connection conn, String cname, String cpass, String mail, String lname, String sname, int pcode, String city, String byear) {
+        cpass = hashStuff(cpass);
+
+
+
         String insertQ = "INSERT INTO customers (customername, customerpass, email, lastname, streetname, postcode, city, birthyear) VALUES (" +
                 "'"+cname + "', '"+ cpass +"', '" + mail + "', '" + lname +"', '" +
                     sname + "', '"+ pcode +"', '" + city + "', '" + byear + "')";
@@ -165,6 +174,29 @@ public class Database {
             e.printStackTrace();
         }
     }
+
+    public String hashStuff(String pass)  {
+        String hashtext = "";
+
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-512");
+            byte[] messageDigest = md.digest(pass.getBytes());
+
+            BigInteger bigInt = new BigInteger(1, messageDigest);
+
+            hashtext = bigInt.toString(16);
+
+            while (hashtext.length() < 32) {
+                hashtext = "0" + hashtext;
+            }
+
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+        return hashtext;
+
+    }
+
 
 
 }
