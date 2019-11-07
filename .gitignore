@@ -27,7 +27,13 @@
 # Gradle
 .idea/**/gradle.xml
 .idea/**/libraries
-
+application.properties
+C:\Users\pakarl\Desktop\Tasks\Case\vipscase-backend\src\main\resources\application.properties
+src/main/resources/application.properties
+spring-openid/src/main/resources/application.properties
+.recommenders/
+/spring-hibernate4/nbproject/
+spring-security-openid/src/main/resources/application.properties
 # Gradle and Maven with auto-import
 # When using Gradle or Maven with auto-import, you should exclude module files,
 # since they will be recreated, and may cause churn.  Uncomment if using
