@@ -22,6 +22,8 @@ public class VipscaseApplication {
 		Database db = new Database();
     
 		Connection conn = db.connectToDb();
+
+
 	}
 
 }

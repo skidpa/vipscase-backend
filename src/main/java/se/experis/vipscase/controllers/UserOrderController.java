@@ -97,14 +97,13 @@ public class UserOrderController {
         String dbPass = Arrays.toString(userCred.get(0));
         dbPass = dbPass.substring(1, dbPass.length() -1);
 
+        String newHashed = db.hashStuff(user.getPassword());
 
-
-        if(user.getPassword().equals(dbPass)){
-            System.out.println("Wohoo loged in");
-        } else {
-            System.out.println("Hacker be Gone!");
+        if(newHashed.equals(dbPass)) {
+            System.out.println("Nu funkade det faktiskt");
+        }else {
+            System.out.println("Funkade inte alls");
         }
-        //PA
 
     }
 
