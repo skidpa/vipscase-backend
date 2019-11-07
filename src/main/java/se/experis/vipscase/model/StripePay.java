@@ -18,6 +18,14 @@ public class StripePay {
     public StripePay() {
     }
 
+    public StripePay(String description, int amount, String stripeEmail, String stripeToken, String idempotencyThing) {
+        this.description = description;
+        this.amount = amount;
+        this.stripeEmail = stripeEmail;
+        this.stripeToken = stripeToken;
+        this.idempotencyThing = idempotencyThing;
+    }
+
     public String getDescription() {
         return description;
     }
