@@ -14,7 +14,7 @@ import se.experis.vipscase.Database;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.sql.Connection;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -39,6 +39,9 @@ public class UserOrderController {
             prod_id.add(str);
         }
 
+
+        //Finns det någon mening med att använda customer_id från
+        // POST /order eller kan vi använda sessionen här istället?
         Order order = new Order(
                 json.get("order").get("customer_id").asInt(),
                 prod_id,
@@ -58,13 +61,55 @@ public class UserOrderController {
         Database db = new Database();
         Connection conn = db.connectToDb();
         // set atomic off
+        String insertQ = "INSERT INTO orders (customer_id) VALUES (?)";
+        PreparedStatement pst = null;
+        try {
+            //order
+            pst = conn.prepareStatement(insertQ, Statement.RETURN_GENERATED_KEYS);
+            System.out.println(order.getCustomer_id());
+
+            pst.setObject(1, order.getCustomer_id());
+
+            int order_id = db.addOrder(conn, pst);
+            //order_details
+            //db.addOrderDetails(conn, order_id, order.getProduct_id(), order.getStatus());
+
+            Database db2 = new Database();
+            PreparedStatement pst2 = null;
+            Connection conn2 = null;
+            String insertQ2;
+
+            for (int i = 0; i < order.getProduct_id().size(); i++) {
+
+
+                conn2 = db2.connectToDb();
+                insertQ2 = "INSERT INTO order_details (order_id, product_id, status) " +
+                        "VALUES (?,?,?)";
+
+                try {
+                    pst2 = conn.prepareStatement(insertQ2);
+                    pst2.setInt(1, order_id);
+                    pst2.setInt(2,Integer.parseInt(order.getProduct_id().get(i).toString())); //????
+                    pst2.setString(3, order.getStatus());
+                    db.addOrderDetails(conn2, pst2);
+
+                } catch (SQLException d) {
+                    d.printStackTrace();
+                }
+            }
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+        }
+
 
         //create order
-        int order_id = db.addOrder(conn, order.getCustomer_id());
+        //int order_id = db.addOrder(conn, order.getCustomer_id());
         //System.out.println(order_id);
         // retrive the new id
         //create order details
-        db.addOrderDetails(conn, order_id, order.getProduct_id(), order.getStatus());
 
         //charge the user
         //stripe pay stuff...
@@ -89,10 +134,27 @@ public class UserOrderController {
     public void registerUser(@RequestBody User user) {
         Database db = new Database();
         Connection conn = db.connectToDb();
-        String sDate = user.getBirthdate();
+        String cpass = db.hashStuff(user.getPassword());
 
-        db.insertQuery(conn, user.getName(), user.getPassword(), user.getEmail(), user.getLastname(), user.getStreet(), user.getPostcode(), user.getCity(), user.getBirthdate());
-        //TODO: Hash passwords
+        String insertQ = "INSERT INTO " +
+                "customers (customername, customerpass, email, lastname, streetname, postcode, city, birthyear) " +
+                "VALUES (?,?,?,?,?,?,?,?)";
+
+        try {
+            PreparedStatement pst = conn.prepareStatement(insertQ);
+            pst.setString(1, user.getName());
+            pst.setString(2, cpass);
+            pst.setString(3, user.getEmail());
+            pst.setString(4, user.getLastname());
+            pst.setString(5, user.getStreet());
+            pst.setInt(6, user.getPostcode()); //?
+            pst.setString(7, user.getCity());
+            pst.setString(8, user.getBirthdate());
+            db.insertQuery(conn, pst);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        //db.insertQuery(conn, user.getName(), user.getPassword(), user.getEmail(), user.getLastname(), user.getStreet(), user.getPostcode(), user.getCity(), user.getBirthdate());
 
         //Simon
 
@@ -101,27 +163,49 @@ public class UserOrderController {
     @PostMapping("/login")
     @ResponseBody
     public void loginUser(HttpServletResponse response, HttpServletRequest request, @RequestBody User user) {
+
         Database db = new Database();
         ArrayList<Object[]> userCred = new ArrayList<>();
+        String newHashed = "", dbPass = "";
 
         Connection conn = db.connectToDb();
-        String sql = "SELECT customerpass FROM customers WHERE email='" + user.getEmail() +"'";
-        userCred = db.retrieveQuery(conn, sql);
-        String dbPass = Arrays.toString(userCred.get(0));
-        dbPass = dbPass.substring(1, dbPass.length() -1);
+        String sql = "SELECT customerpass FROM customers WHERE email= ?";
+        try {
 
-        String newHashed = db.hashStuff(user.getPassword());
+            PreparedStatement pst = conn.prepareStatement(sql);
+            pst.setString(1, user.getEmail());
+            userCred = db.retrieveQuery(conn, pst);
 
+            dbPass = Arrays.toString(userCred.get(0));
+            dbPass = dbPass.substring(1, dbPass.length() -1);
+
+            newHashed = db.hashStuff(user.getPassword());
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        Connection conn2 = db.connectToDb();
 
         if(newHashed.equals(dbPass)) {
-            System.out.println("Nu funkade det faktiskt");
-            String usersql = "SELECT id FROM customers WHERE email='" + user.getEmail() +"'";
-            userCred = db.retrieveQuery(db.connectToDb(), usersql);
-            String usrid = Arrays.toString(userCred.get(0));
-            usrid = usrid.substring(1, usrid.length() -1);
 
-            HttpSession session = request.getSession();
-            session.setAttribute("se",usrid);
+            String userSql = "SELECT id FROM customers WHERE email= ?";
+            try {
+                PreparedStatement pst2 = conn2.prepareStatement(userSql);
+                pst2.setString(1, user.getEmail());
+                userCred = db.retrieveQuery(conn2, pst2);
+
+                String usrid = Arrays.toString(userCred.get(0));
+                usrid = usrid.substring(1, usrid.length() -1);
+
+                HttpSession session = request.getSession();
+                session.setAttribute("se",usrid);
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+
+
+
 
         } else {
             System.out.println("Hacker be Gone!");
@@ -134,33 +218,55 @@ public class UserOrderController {
     //Lists all orders
     @GetMapping("/orders")
     public ArrayList<ArrayList<Object[]>> getOrders(HttpServletRequest request, HttpServletResponse response) {
-        //Since Login isn't done, and is some what dependent on frontend, the user identification number is hard coded
-        //In the future, this id should be fetched from session or local storage.
+
         Object session = request.getSession().getAttribute("se");
         int userId = Integer.parseInt(session.toString());
         Database db = new Database();
-        String sqlQuery1 = "SELECT id FROM orders WHERE customer_id = '" + userId + "';";
-        ArrayList<Object[]> results = db.retrieveQuery(db.connectToDb(), sqlQuery1);
+        Connection conn = db.connectToDb();
+
+        ArrayList<Object[]> results = new ArrayList<>();
+        String sqlQuery = "SELECT id FROM orders WHERE customer_id = ?";
+        try {
+
+            PreparedStatement pst = conn.prepareStatement(sqlQuery);
+            pst.setInt(1, userId);
+            results = db.retrieveQuery(conn, pst);
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
         //Retrieves an array list of objects containing every order_id for customer.
 
-        String newId = "";
-        String id_from_orders;
-        String sqlQuery2;
+        String newId, id_from_orders, sqlQuery2;
         ArrayList<Object[]> results2 = new ArrayList<>();
         ArrayList<ArrayList<Object[]>> finalResults = new ArrayList<>();
+        Connection conn2;
 
         for (int i = 0; i < results.size(); i++) {
-            System.out.println("Run: " + i);
+            conn2 = db.connectToDb();
             id_from_orders = Arrays.toString(results.get(i));
             newId = id_from_orders.substring(1, id_from_orders.length()-1);
-            sqlQuery2 = "SELECT order_id, product_id, status FROM order_details WHERE order_id = '" + newId + "';";
-            try {
-                results2 = db.retrieveQuery(db.connectToDb(), sqlQuery2);
-                finalResults.add(results2);
+            sqlQuery2 = "SELECT order_id, product_id, status FROM order_details WHERE order_id = ?";
 
-            } catch (Exception e) {
+
+            try {
+               PreparedStatement pst2 = conn2.prepareStatement(sqlQuery2);
+               pst2.setInt(1, Integer.parseInt(newId));
+                try {
+                    results2 = db.retrieveQuery(conn2, pst2);
+                    finalResults.add(results2);
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            } catch (SQLException e) {
                 e.printStackTrace();
             }
+
+
 
         }
 
@@ -171,28 +277,47 @@ public class UserOrderController {
     @GetMapping("/order/{order_id}")
     @ResponseBody
     public ArrayList<Object[]> getOrderById(HttpServletRequest request, HttpServletResponse response, @PathVariable String order_id) {
-        //Retrieves an order by its id.
-        //Must only return if the order matches the current user
-        //Invalid users must receive an error
-        //Since Login isn't done, and is some what dependent on frontend, the user identification number is hard coded
-        //In the future, this id should be fetched from session or local storage.
+
         Object session = request.getSession().getAttribute("se");
         int userId = Integer.parseInt(session.toString());
         Database db = new Database();
-        String sqlQuery1 = "SELECT id FROM orders WHERE customer_id = '" + userId + "';";
-        ArrayList<Object[]> results = db.retrieveQuery(db.connectToDb(), sqlQuery1);
-        String id_from_orders;
-        String newId;
-        String sqlQuery2 = "";
-        ArrayList<Object[]> results2 = new ArrayList<>();
-        for (Object[] result : results) {
+        Connection conn = db.connectToDb();
+        String sqlQuery1 = "SELECT id FROM orders WHERE customer_id = ?";
+        ArrayList<Object[]> results = new ArrayList<>();
 
+        try {
+            PreparedStatement pst = conn.prepareStatement(sqlQuery1);
+            pst.setInt(1, userId); //Behöver eventuellt vara en sträng
+            results = db.retrieveQuery(conn, pst);
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        String id_from_orders, newId, sqlQuery2;
+        ArrayList<Object[]> results2 = new ArrayList<>();
+        Connection conn2 = null;
+        int i = 0;
+        for (Object[] result : results) {
             id_from_orders = Arrays.toString(result);
             newId = id_from_orders.substring(1, id_from_orders.length() - 1);
 
             if (newId.equals(order_id)) {
-                sqlQuery2 = "SELECT order_id, product_id, status FROM order_details WHERE order_id = '" + newId+ "';";
-                results2 = db.retrieveQuery(db.connectToDb(), sqlQuery2);
+
+                sqlQuery2 = "SELECT order_id, product_id, status FROM order_details WHERE order_id = ?";
+
+                try {
+                    conn2 = db.connectToDb();
+                    PreparedStatement pst2 = conn2.prepareStatement(sqlQuery2);
+                    pst2.setInt(1, Integer.parseInt(newId));
+                    results2 = db.retrieveQuery(conn2, pst2);
+
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+
+
                 break;
             }
         }
