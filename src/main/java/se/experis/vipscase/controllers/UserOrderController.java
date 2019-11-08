@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import se.experis.vipscase.model.Order;
 import se.experis.vipscase.model.StripePay;
 import se.experis.vipscase.model.User;
+import se.experis.vipscase.model.Product;
 import se.experis.vipscase.Database;
 
 
@@ -160,6 +161,30 @@ public class UserOrderController {
 
     }
 
+    @PostMapping("/addproduct")
+    @ResponseBody
+    public void addProduct(@RequestBody Product product) {
+        Database db = new Database();
+        Connection conn = db.connectToDb();
+        String sql = "INSERT INTO products (productname, productdescription, instock, price) "
+                + " VALUES (?,?,?,?)";
+
+        ArrayList<Object[]> results = new ArrayList<>();
+        try {
+            PreparedStatement pst = conn.prepareStatement(sql);
+            pst.setString(1, product.getProductname());
+            pst.setString(2, product.getProductdescription());
+            pst.setInt(3, product.getInstock());
+            pst.setInt(4, product.getPrice());
+            db.insertQuery(conn, pst);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
     @PostMapping("/login")
     @ResponseBody
     public void loginUser(HttpServletResponse response, HttpServletRequest request, @RequestBody User user) {
@@ -213,6 +238,24 @@ public class UserOrderController {
         //PA
         //return null;
 
+    }
+
+
+    //Returns every product from database
+    @GetMapping("/products")
+    public ArrayList<Object[]> getAllProduct() {
+        Database db = new Database();
+        String query = "SELECT * FROM products";
+        Connection conn = db.connectToDb();
+        ArrayList<Object[]> results = new ArrayList<>();
+        try {
+            PreparedStatement pst = conn.prepareStatement(query);
+            results = db.retrieveQuery(conn, pst);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return results;
     }
 
     //Lists all orders
