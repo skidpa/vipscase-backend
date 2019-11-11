@@ -16,10 +16,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @CrossOrigin(maxAge = 3600)
 @RestController
@@ -256,6 +253,66 @@ public class UserOrderController {
         }
 
         return results;
+    }
+
+
+    @GetMapping("/randomproducts")
+    public ArrayList<ArrayList<Object[]>> getRandomProducts() {
+        Database db = new Database();
+        Connection conn = db.connectToDb();
+        ArrayList<Object[]> nrOfRows;
+        ArrayList<String> results = new ArrayList<>();
+        String countQuery = "SELECT id FROM products GROUP BY id";
+        String id_from_orders, newId;
+        ArrayList<ArrayList<Object[]>> finalResults = new ArrayList<>();
+        String finalQuery = "SELECT productname, productdescription, instock, price FROM products WHERE id = ?";
+        PreparedStatement pst = null;
+        int randInt = 0;
+        try {
+            PreparedStatement pst2 = conn.prepareStatement(countQuery);
+            nrOfRows = db.retrieveQuery(conn, pst2);
+            //id_from_orders = Arrays.toString(nrOfRows.get(0));
+
+            for (int i = 0; i < 4; i++) {
+                System.out.println("Run: " + i);
+                System.out.println("1");
+                conn = db.connectToDb();
+                System.out.println("2");
+                Random r = new Random();
+                System.out.println("3");
+
+                try {
+                    randInt = r.nextInt(nrOfRows.size() - 1) + 1;
+                    System.out.println("Rand: ");
+                    System.out.println(randInt);
+                    id_from_orders = Arrays.toString(nrOfRows.get(randInt));
+                    newId = id_from_orders.substring(1, id_from_orders.length() - 1);
+                    results.add(newId);
+
+                    pst = conn.prepareStatement(finalQuery);
+                    pst.setInt(1, Integer.parseInt(results.get(i)));
+
+                    System.out.println(pst);
+
+                    finalResults.add(db.retrieveQuery(conn, pst));
+
+                } catch (SQLException e) {
+                    System.out.println("Inner");
+                    e.printStackTrace();
+                }
+
+            }
+
+        } catch (SQLException e) {
+            System.out.println("yalla");
+            e.printStackTrace();
+        }
+
+
+
+
+
+        return finalResults;
     }
 
     //Lists all orders
