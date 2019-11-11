@@ -123,9 +123,9 @@ public class Database {
   
     public Connection connectToDb() {
         System.out.println("Connecting..");
-        String url = "jdbc:postgresql://ec2-54-228-252-67.eu-west-1.compute.amazonaws.com:5432/d8rvv37evbnavq";
-        String user = "ypmhwqfqxnnrvl";
-        String pass = "62d2cf241684da311d7fd46492f20218f6bfe43a4c4c473d20870e76d48bce8b";
+        String url = "jdbc:postgresql://localhost:5432/vipscase";
+        String user = "postgres";
+        String pass = "root";
         Connection conn = null;
         try {
             conn = DriverManager.getConnection(url, user, pass);
