@@ -14,6 +14,8 @@ public class StripePay {
     private String stripeEmail;
     private String stripeToken;
     private String idempotencyThing;
+    private String token_id;
+
 
     public StripePay() {
     }
@@ -26,6 +28,18 @@ public class StripePay {
         this.idempotencyThing = idempotencyThing;
     }
 
+    // nya
+
+
+    public String getToken_id() {
+        return token_id;
+    }
+
+    public void setToken_id(String token_id) {
+        this.token_id = token_id;
+    }
+
+    // gamla
     public String getDescription() {
         return description;
     }
@@ -82,6 +96,7 @@ public class StripePay {
                 ", stripeEmail='" + stripeEmail + '\'' +
                 ", stripeToken='" + stripeToken + '\'' +
                 ", idempotencyThing='" + idempotencyThing + '\'' +
+                ", token_id='" + token_id + '\'' +
                 '}';
     }
 }
