@@ -7,6 +7,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -89,11 +91,11 @@ public class Database {
     public void insertQuery(Connection conn, String cname, String cpass, String mail, String lname, String sname, int pcode, String city, String byear) {
         cpass = hashStuff(cpass);
 
-
-
         String insertQ = "INSERT INTO customers (customername, customerpass, email, lastname, streetname, postcode, city, birthyear) VALUES (" +
                 "'"+cname + "', '"+ cpass +"', '" + mail + "', '" + lname +"', '" +
                     sname + "', '"+ pcode +"', '" + city + "', '" + byear + "')";
+
+        System.out.println(insertQ);
 
 
         try {
@@ -146,7 +148,7 @@ public class Database {
   
     public Connection connectToDb() {
         System.out.println("Connecting..");
-        String url = "jdbc:postgresql://localhost:5432/vipscase";
+        String url = "jdbc:postgresql://localhost:5432/vipstest";
         String user = "postgres";
         String pass = "root";
         Connection conn = null;
