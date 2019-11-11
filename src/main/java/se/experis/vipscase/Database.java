@@ -22,20 +22,20 @@ public class Database {
     /**
      *
      * @param conn, The connection provided from connectToDb()
-     * @param query, String of queries
+     * @param pst, The prepared query statement from loginUser()
      * @return Returns an ArrayList of objects, containing the response from the database
      */
 
-    public ArrayList<Object[]> retrieveQuery(Connection conn, String query) {
+    public ArrayList<Object[]> retrieveQuery(Connection conn, PreparedStatement pst) {
+
+        //Parameterized query, fixed in UserOrderController
         ArrayList<Object[]> results = new ArrayList<Object[]>();
 
         
-        PreparedStatement pst = null;
         boolean isResult = false;
         boolean gotResult = false;
         try {
             System.out.println();
-            pst = conn.prepareStatement(query);
             isResult = pst.execute();
 
         } catch (Exception e) {
@@ -78,44 +78,26 @@ public class Database {
 
     /**
      *  @param conn, The connection provided from connectToDb()
-     * @param cname, User's name
-     * @param cpass, -||- password
-     * @param mail, -||- mail
-     * @param lname, -||- lastname
-     * @param sname, -||- street
-     * @param pcode, -||- postcode
-     * @param city, -||- city
-     * @param byear, -||- birthyear-month-day
-     * @param byear
+     * @param pst, The prepared statement from postOrder()
      */
-    public void insertQuery(Connection conn, String cname, String cpass, String mail, String lname, String sname, int pcode, String city, String byear) {
-        cpass = hashStuff(cpass);
-
-        String insertQ = "INSERT INTO customers (customername, customerpass, email, lastname, streetname, postcode, city, birthyear) VALUES (" +
-                "'"+cname + "', '"+ cpass +"', '" + mail + "', '" + lname +"', '" +
-                    sname + "', '"+ pcode +"', '" + city + "', '" + byear + "')";
-
-        System.out.println(insertQ);
+    public void insertQuery(Connection conn, PreparedStatement pst) {
 
 
         try {
-            PreparedStatement pst = conn.prepareStatement(insertQ);
             pst.execute();
             closeConnect(conn);
 
             } catch (SQLException e) {
             e.printStackTrace();
-
         }
-
     }
 
-    public int addOrder(Connection conn, int customer_id) {
-        String insertQ = "INSERT INTO orders (customer_id) VALUES ('"+ customer_id + "')";
-        System.out.println(insertQ);
+    public int addOrder(Connection conn, PreparedStatement pst) {
+        //String insertQ = "INSERT INTO orders (customer_id) VALUES ('"+ customer_id + "')";
+        //System.out.println(insertQ);
         int order_id = 0;
         try {
-            PreparedStatement pst = conn.prepareStatement(insertQ, Statement.RETURN_GENERATED_KEYS);
+            //PreparedStatement pst = conn.prepareStatement(insertQ, Statement.RETURN_GENERATED_KEYS);
             pst.execute();
 
             ResultSet getId = pst.getGeneratedKeys();
@@ -130,19 +112,15 @@ public class Database {
         return order_id;
     }
 
-    public void addOrderDetails(Connection conn, int order_id, ArrayList product_id, String status) {
+    public void addOrderDetails(Connection conn, PreparedStatement pst) {
 
         try {
-            for (Object prod_id : product_id) {
-                String insertQ = "INSERT INTO order_details (order_id, product_id, status) " +
-                        "VALUES (" + "'"+ order_id + "', '"+ prod_id +"', '" + status + "')";
-                PreparedStatement pst = conn.prepareStatement(insertQ);
                 pst.execute();
-            }
-
-        } catch (SQLException e) {
-            e.printStackTrace();
+            } catch (SQLException ex) {
+            ex.printStackTrace();
         }
+
+        closeConnect(conn);
 
     }
   
