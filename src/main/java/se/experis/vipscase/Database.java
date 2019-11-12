@@ -126,7 +126,7 @@ public class Database {
   
     public Connection connectToDb() {
         System.out.println("Connecting..");
-        String url = "jdbc:postgresql://localhost:5432/vipstest";
+        String url = "jdbc:postgresql://localhost:5432/vipscase";
         String user = "postgres";
         String pass = "root";
         Connection conn = null;
