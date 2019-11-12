@@ -16,7 +16,6 @@ import javax.servlet.http.HttpSession;
 import java.sql.*;
 import java.util.*;
 
-@CrossOrigin(maxAge = 3600)
 @RestController
 public class UserOrderController {
     UserOrderController(){
@@ -125,7 +124,6 @@ public class UserOrderController {
 
     }
 
-    @CrossOrigin("185.136.20.238")
     @PostMapping("/login")
     @ResponseBody
     public void loginUser(HttpServletResponse response, HttpServletRequest request, @RequestBody User user) {
