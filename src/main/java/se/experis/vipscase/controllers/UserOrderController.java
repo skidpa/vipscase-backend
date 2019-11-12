@@ -125,6 +125,7 @@ public class UserOrderController {
 
     }
 
+    @CrossOrigin
     @PostMapping("/login")
     @ResponseBody
     public void loginUser(HttpServletResponse response, HttpServletRequest request, @RequestBody User user) {
