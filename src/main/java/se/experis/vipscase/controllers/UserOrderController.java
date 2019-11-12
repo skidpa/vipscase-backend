@@ -3,6 +3,8 @@ package se.experis.vipscase.controllers;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import se.experis.vipscase.model.Order;
 import se.experis.vipscase.model.StripePay;
 import se.experis.vipscase.model.User;
@@ -172,8 +174,20 @@ public class UserOrderController {
                 header.setAccessControlAllowCredentials(true);
 
 
+                // test
 
-                //return session;
+                CorsConfiguration corsconf = new CorsConfiguration();
+                corsconf.setAllowCredentials(true);
+                corsconf.setAllowedOrigins(Arrays.asList("*"));
+                corsconf.setAllowedMethods(Arrays.asList("GET", "POST"));
+                corsconf.setAllowedHeaders(Arrays.asList("X-Requested-With","Origin","Content-Type","Accept","Authorization"));
+                corsconf.setExposedHeaders(Arrays.asList("Access-Control-Allow-Headers", "Authorization, x-xsrf-token, Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, " +
+                        "Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers"));
+
+                /*UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", corsconf);
+
+                return source;*/
 
             } catch (SQLException e) {
                 e.printStackTrace();
