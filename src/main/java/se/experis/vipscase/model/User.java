@@ -1,6 +1,5 @@
 package se.experis.vipscase.model;
 
-import java.util.Date;
 
 public class User {
 
