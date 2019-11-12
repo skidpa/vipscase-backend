@@ -125,7 +125,7 @@ public class UserOrderController {
 
     }
 
-    @CrossOrigin("185.136.20.244")
+    @CrossOrigin("185.136.20.238")
     @PostMapping("/login")
     @ResponseBody
     public void loginUser(HttpServletResponse response, HttpServletRequest request, @RequestBody User user) {
