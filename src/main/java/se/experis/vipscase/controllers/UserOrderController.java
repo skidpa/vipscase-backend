@@ -1,7 +1,10 @@
 package se.experis.vipscase.controllers;
 
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import se.experis.vipscase.model.Order;
 import se.experis.vipscase.model.StripePay;
 import se.experis.vipscase.model.User;
@@ -16,7 +19,7 @@ import javax.servlet.http.HttpSession;
 import java.sql.*;
 import java.util.*;
 
-@CrossOrigin(maxAge = 3600)
+@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 @RestController
 public class UserOrderController {
     UserOrderController(){
@@ -102,7 +105,7 @@ public class UserOrderController {
 
     @PostMapping("/addproduct")
     @ResponseBody
-    public void addProduct(HttpServletResponse response,@RequestBody Product product) {
+    public void addProduct(HttpServletResponse response, @RequestBody Product product) {
         Database db = new Database();
         Connection conn = db.connectToDb();
         String sql = "INSERT INTO products (productname, productdescription, instock, price) "
@@ -167,7 +170,6 @@ public class UserOrderController {
                 response.setStatus(200);
                 Cookie cook = new Cookie("test", "s");
                 response.addCookie(cook);
-                //return session;
 
             } catch (SQLException e) {
                 e.printStackTrace();
