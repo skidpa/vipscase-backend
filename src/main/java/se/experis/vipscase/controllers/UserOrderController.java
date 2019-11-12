@@ -16,6 +16,7 @@ import javax.servlet.http.HttpSession;
 import java.sql.*;
 import java.util.*;
 
+@CrossOrigin(maxAge = 3600)
 @RestController
 public class UserOrderController {
     UserOrderController(){
@@ -101,7 +102,7 @@ public class UserOrderController {
 
     @PostMapping("/addproduct")
     @ResponseBody
-    public void addProduct(HttpServletResponse response,@RequestBody Product product) {
+    public void addProduct(HttpServletResponse response, @RequestBody Product product) {
         Database db = new Database();
         Connection conn = db.connectToDb();
         String sql = "INSERT INTO products (productname, productdescription, instock, price) "
