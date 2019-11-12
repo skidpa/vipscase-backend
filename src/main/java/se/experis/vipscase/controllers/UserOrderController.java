@@ -1,16 +1,13 @@
 package se.experis.vipscase.controllers;
 
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import org.springframework.web.bind.annotation.*;
 import se.experis.vipscase.model.Order;
 import se.experis.vipscase.model.StripePay;
 import se.experis.vipscase.model.User;
 import se.experis.vipscase.model.Product;
 import se.experis.vipscase.Database;
-
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
