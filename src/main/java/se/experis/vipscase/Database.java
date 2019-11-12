@@ -7,6 +7,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.sql.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -80,6 +82,7 @@ public class Database {
      */
     public void insertQuery(Connection conn, PreparedStatement pst) {
 
+
         try {
             pst.execute();
             closeConnect(conn);
@@ -123,7 +126,7 @@ public class Database {
   
     public Connection connectToDb() {
         System.out.println("Connecting..");
-        String url = "jdbc:postgresql://localhost:5432/vipscase";
+        String url = "jdbc:postgresql://localhost:5432/vipstest";
         String user = "postgres";
         String pass = "root";
         Connection conn = null;
