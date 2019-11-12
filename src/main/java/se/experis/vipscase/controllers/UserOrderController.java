@@ -19,7 +19,7 @@ import javax.servlet.http.HttpSession;
 import java.sql.*;
 import java.util.*;
 
-@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
 @RestController
 public class UserOrderController {
     UserOrderController(){
