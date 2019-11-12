@@ -1,6 +1,7 @@
 package se.experis.vipscase.controllers;
 
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
 import se.experis.vipscase.model.Order;
 import se.experis.vipscase.model.StripePay;
@@ -167,7 +168,13 @@ public class UserOrderController {
                 response.setStatus(200);
                 Cookie cook = new Cookie("test", "s");
                 response.addCookie(cook);
-                
+                HttpHeaders header = new HttpHeaders();
+                header.setAccessControlAllowCredentials(true);
+                response.addHeader("Access-Control-Allow-Origin", "*");
+                response.addHeader("Access-Control-Allow-Methods", "POST, GET");
+                response.addHeader("Access-Control-Allow-Headers", "X-PINGOTHER, Origin, X-Requested-With, Content-Type, Accept");
+                response.addHeader("Access-Control-Max-Age", "1728000");
+
 
                 //return session;
 
