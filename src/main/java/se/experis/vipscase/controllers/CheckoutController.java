@@ -3,6 +3,7 @@ package se.experis.vipscase.controllers;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Charge;
+import com.stripe.model.PaymentIntent;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.RequestOptions;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,19 +35,25 @@ public class CheckoutController {
     public void stripePayment(HttpServletResponse response, HttpServletRequest request, @RequestBody StripePay pay){
 
         System.out.println(pay.toString());
-        System.out.println();
+        System.out.println("setting stripe key");
 
         Stripe.apiKey = stripeKey;
+        /*
+        System.out.println("session id: " + request.getSession().getId());
+        System.out.println("reading idempotency");
+        //pay.setIdempotencyThing(request.getSession().getId());
+        System.out.println(pay.getIdempotencyThing());
 
-
-
-
+        System.out.println("creating chagreParams map");
         Map<String, Object> chargeParams = new HashMap<String,Object>();
+        System.out.println("setting amount");
         chargeParams.put("amount", pay.getAmount());
+        System.out.println("settiing currency");
         chargeParams.put("currency", "sek");
-        chargeParams.put("description", "front end test");
+        //chargeParams.put("description", "front end test");
+        System.out.println("setting source");
         chargeParams.put("source", pay.getToken_id()); // tok_xx from frontend
-
+        */
         // set stuff like user id to be able to track payments to set order id would be nice as well.
         // will be visible in payment info on stripe
         //Map<String, String> initalMetadata = new HashMap<String, String>();
@@ -54,23 +61,73 @@ public class CheckoutController {
         //initalMetadata.put("order_id", "1");
         //chargeParams.put("metadata", initalMetadata);
 
+        // payment intent stuff since we are europeans and not americans..
+
+        Map<String, Object> paymentIntentParams = new HashMap<String, Object>();
+        System.out.println("setting intent amount");
+        paymentIntentParams.put("amount", pay.getAmount());
+        System.out.println("setting intent currency");
+        paymentIntentParams.put("currency", "sek");
+
+        ArrayList payment_method_types = new ArrayList();
+        payment_method_types.add("card");
+        System.out.println("setting payment_metod_types");
+        paymentIntentParams.put("payment_method_types", payment_method_types);
+
+
+
+
+        try {
+            // idempotency
+            System.out.println("setting idempotency with session id");
+            RequestOptions options = RequestOptions.builder()
+                    .setIdempotencyKey(pay.getIdempotencyThing())
+                    .build();
+            // charge the card
+            /*Charge charge = Charge.create(chargeParams, options);
+            System.out.println("charge: " + charge);
+            System.out.println("charge: " + charge.getStatus());
+            System.out.println("creating session with stripes session thing this is after charge");
+            //Session session = Session.create(chargeParams); // this gives some kind of error/warning and is probably pointless
+            System.out.println("charge is now done...");*/
+
+            System.out.println("createing intetn charge with idempotency option set");
+            PaymentIntent.create(paymentIntentParams, options);
+            response.setStatus(201);
+        } catch (StripeException e){
+            System.out.println("stripe exception caught");
+            e.printStackTrace();
+            response.setStatus(400);
+        }
+    }
+
+    @PostMapping("stripe/intent")
+    @ResponseBody
+    public String stripeIntent(HttpServletResponse response, HttpServletRequest request, @RequestBody StripePay pay){
+
+        Stripe.apiKey = stripeKey;
+
+        Map<String, Object> paymentIntentParams = new HashMap<String, Object>();
+        paymentIntentParams.put("amount", pay.getAmount());
+        paymentIntentParams.put("currency", "sek");
+        ArrayList payment_method_types = new ArrayList();
+        payment_method_types.add("card");
+        paymentIntentParams.put("payment_method_types", payment_method_types);
+        PaymentIntent intent = null;
 
         try {
             // idempotency
             RequestOptions options = RequestOptions.builder()
                     .setIdempotencyKey(pay.getIdempotencyThing())
                     .build();
-            // charge the card
-            Charge charge = Charge.create(chargeParams, options);
-            System.out.println("charge: " + charge);
-            System.out.println("charge: " + charge.getStatus());
-            Session session = Session.create(chargeParams);
-            System.out.println("charge is now done...");
+
+            intent = PaymentIntent.create(paymentIntentParams, options);
             response.setStatus(201);
+            return intent.toJson();
         } catch (StripeException e){
-            System.out.println("stripe exception caught");
             e.printStackTrace();
             response.setStatus(400);
+            return null;
         }
     }
 
