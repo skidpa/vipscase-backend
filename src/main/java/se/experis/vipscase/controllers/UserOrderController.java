@@ -17,7 +17,7 @@ import javax.servlet.http.HttpSession;
 import java.sql.*;
 import java.util.*;
 
-//@CrossOrigin(origins = "*", maxAge = 3600)
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 public class UserOrderController {
     UserOrderController(){
@@ -170,10 +170,7 @@ public class UserOrderController {
                 response.addCookie(cook);
                 HttpHeaders header = new HttpHeaders();
                 header.setAccessControlAllowCredentials(true);
-                response.addHeader("Access-Control-Allow-Origin", "*");
-                response.addHeader("Access-Control-Allow-Methods", "POST, GET");
-                response.addHeader("Access-Control-Allow-Headers", "X-PINGOTHER, Origin, X-Requested-With, Content-Type, Accept");
-                response.addHeader("Access-Control-Max-Age", "1728000");
+
 
 
                 //return session;
