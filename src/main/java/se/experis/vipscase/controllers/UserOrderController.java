@@ -16,7 +16,7 @@ import javax.servlet.http.HttpSession;
 import java.sql.*;
 import java.util.*;
 
-@CrossOrigin(maxAge = 3600)
+@CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 public class UserOrderController {
     UserOrderController(){
@@ -167,6 +167,8 @@ public class UserOrderController {
                 response.setStatus(200);
                 Cookie cook = new Cookie("test", "s");
                 response.addCookie(cook);
+                response.
+
                 //return session;
 
             } catch (SQLException e) {
