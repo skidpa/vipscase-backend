@@ -170,24 +170,6 @@ public class UserOrderController {
                 response.setStatus(200);
                 Cookie cook = new Cookie("test", "s");
                 response.addCookie(cook);
-                HttpHeaders header = new HttpHeaders();
-                header.setAccessControlAllowCredentials(true);
-
-
-                // test
-
-                CorsConfiguration corsconf = new CorsConfiguration();
-                corsconf.setAllowCredentials(true);
-                corsconf.setAllowedOrigins(Arrays.asList("*"));
-                corsconf.setAllowedMethods(Arrays.asList("GET", "POST"));
-                corsconf.setAllowedHeaders(Arrays.asList("X-Requested-With","Origin","Content-Type","Accept","Authorization"));
-                corsconf.setExposedHeaders(Arrays.asList("Access-Control-Allow-Headers", "Authorization, x-xsrf-token, Access-Control-Allow-Headers, Origin, Accept, X-Requested-With, " +
-                        "Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers"));
-
-                /*UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-                source.registerCorsConfiguration("/**", corsconf);
-
-                return source;*/
 
             } catch (SQLException e) {
                 e.printStackTrace();
