@@ -1,9 +1,6 @@
 package se.experis.vipscase.controllers;
 
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import org.springframework.web.bind.annotation.*;
 import se.experis.vipscase.model.Order;
 import se.experis.vipscase.model.StripePay;
@@ -12,6 +9,7 @@ import se.experis.vipscase.model.Product;
 import se.experis.vipscase.Database;
 
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -30,47 +28,16 @@ public class UserOrderController {
 
     @PostMapping("/order")
     @ResponseBody
-    //public void postOrder(@RequestBody Order order, StripePay pay) {
-    public void postOrder(@RequestBody ObjectNode json) {
-        ArrayList prod_id = new ArrayList();
-        for (JsonNode str: json.get("order").get("product_id")) {
-            prod_id.add(str);
-        }
-
-
-        //Finns det någon mening med att använda customer_id från
-        // POST /order eller kan vi använda sessionen här istället?
-        Order order = new Order(
-                json.get("order").get("customer_id").asInt(),
-                prod_id,
-                json.get("order").get("status").asText()
-                );
-
-        StripePay pay = new StripePay(
-                json.get("charge").get("description").asText(),
-                json.get("charge").get("amount").asInt(),
-                json.get("charge").get("stripeEmail").asText(),
-                json.get("charge").get("stripeToken").asText(),
-                json.get("charge").get("idempotencyThing").asText()
-        );
-
-        System.out.println("---- order ----\n" + order.toString() + "\n---- Charge ----\n" + pay.toString());
-
+    public void postOrder(HttpServletResponse response, @RequestBody Order order) {
         Database db = new Database();
         Connection conn = db.connectToDb();
-        // set atomic off
+        //TODO: add atomic operations?
         String insertQ = "INSERT INTO orders (customer_id) VALUES (?)";
         PreparedStatement pst = null;
         try {
-            //order
             pst = conn.prepareStatement(insertQ, Statement.RETURN_GENERATED_KEYS);
-            System.out.println(order.getCustomer_id());
-
             pst.setObject(1, order.getCustomer_id());
-
             int order_id = db.addOrder(conn, pst);
-            //order_details
-            //db.addOrderDetails(conn, order_id, order.getProduct_id(), order.getStatus());
 
             Database db2 = new Database();
             PreparedStatement pst2 = null;
@@ -78,8 +45,6 @@ public class UserOrderController {
             String insertQ2;
 
             for (int i = 0; i < order.getProduct_id().size(); i++) {
-
-
                 conn2 = db2.connectToDb();
                 insertQ2 = "INSERT INTO order_details (order_id, product_id, status) " +
                         "VALUES (?,?,?)";
@@ -95,41 +60,16 @@ public class UserOrderController {
                     d.printStackTrace();
                 }
             }
-
-
+            response.setStatus(201);
         } catch (SQLException e) {
             e.printStackTrace();
-
+            response.setStatus(400);
         }
-
-
-        //create order
-        //int order_id = db.addOrder(conn, order.getCustomer_id());
-        //System.out.println(order_id);
-        // retrive the new id
-        //create order details
-
-        //charge the user
-        //stripe pay stuff...
-        /* stripe session typ..
-            Map<String, Object> sessionMap = new HashMap<String,Object>();
-            sessionMap.put("userid", 1);
-            Session session = null;
-            try {
-                session = Session.create(sessionMap);
-            } catch (StripeException e) {
-                e.printStackTrace();
-            }
-            return session;*/
-        System.out.println("orders placed now charge my ass");
-
-        //if charge successful commit changes to db
-        //commit command
     }
 
     @PostMapping("/register/user")
     @ResponseBody
-    public void registerUser(@RequestBody User user) {
+    public void registerUser(HttpServletResponse response,@RequestBody User user) {
         Database db = new Database();
         Connection conn = db.connectToDb();
         String cpass = db.hashStuff(user.getPassword());
@@ -149,8 +89,10 @@ public class UserOrderController {
             pst.setString(7, user.getCity());
             pst.setString(8, user.getBirthdate());
             db.insertQuery(conn, pst);
+            response.setStatus(201);
         } catch (SQLException e) {
             e.printStackTrace();
+            response.setStatus(400);
         }
         //db.insertQuery(conn, user.getName(), user.getPassword(), user.getEmail(), user.getLastname(), user.getStreet(), user.getPostcode(), user.getCity(), user.getBirthdate());
 
@@ -160,7 +102,7 @@ public class UserOrderController {
 
     @PostMapping("/addproduct")
     @ResponseBody
-    public void addProduct(@RequestBody Product product) {
+    public void addProduct(HttpServletResponse response,@RequestBody Product product) {
         Database db = new Database();
         Connection conn = db.connectToDb();
         String sql = "INSERT INTO products (productname, productdescription, instock, price) "
@@ -174,9 +116,10 @@ public class UserOrderController {
             pst.setInt(3, product.getInstock());
             pst.setInt(4, product.getPrice());
             db.insertQuery(conn, pst);
-
+            response.setStatus(201);
         } catch (SQLException e) {
             e.printStackTrace();
+            response.setStatus(400);
         }
 
 
@@ -221,16 +164,17 @@ public class UserOrderController {
 
                 HttpSession session = request.getSession();
                 session.setAttribute("se",usrid);
+                response.setStatus(200);
+                Cookie cook = new Cookie("test", "s");
+                response.addCookie(cook);
+                //return session;
 
             } catch (SQLException e) {
                 e.printStackTrace();
             }
-
-
-
-
         } else {
             System.out.println("Hacker be Gone!");
+            response.setStatus(400);
         }
         //PA
         //return null;
@@ -240,7 +184,7 @@ public class UserOrderController {
 
     //Returns every product from database
     @GetMapping("/products")
-    public ArrayList<Object[]> getAllProduct() {
+    public ArrayList<Object[]> getAllProduct(HttpServletResponse response) {
         Database db = new Database();
         String query = "SELECT * FROM products";
         Connection conn = db.connectToDb();
@@ -248,8 +192,10 @@ public class UserOrderController {
         try {
             PreparedStatement pst = conn.prepareStatement(query);
             results = db.retrieveQuery(conn, pst);
+            response.setStatus(200);
         } catch (SQLException e) {
             e.printStackTrace();
+            response.setStatus(400);
         }
 
         return results;
@@ -257,7 +203,7 @@ public class UserOrderController {
 
 
     @GetMapping("/randomproducts")
-    public ArrayList<ArrayList<Object[]>> getRandomProducts() {
+    public ArrayList<ArrayList<Object[]>> getRandomProducts(HttpServletResponse response) {
         Database db = new Database();
         Connection conn = db.connectToDb();
         ArrayList<Object[]> nrOfRows;
@@ -300,12 +246,14 @@ public class UserOrderController {
                     System.out.println("Inner");
                     e.printStackTrace();
                 }
+                response.setStatus(200);
 
             }
 
         } catch (SQLException e) {
             System.out.println("yalla");
             e.printStackTrace();
+            response.setStatus(400);
         }
 
 
@@ -357,6 +305,7 @@ public class UserOrderController {
                 try {
                     results2 = db.retrieveQuery(conn2, pst2);
                     finalResults.add(results2);
+                    response.setStatus(200);
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -364,6 +313,7 @@ public class UserOrderController {
 
             } catch (SQLException e) {
                 e.printStackTrace();
+                response.setStatus(400);
             }
 
 
@@ -412,9 +362,10 @@ public class UserOrderController {
                     PreparedStatement pst2 = conn2.prepareStatement(sqlQuery2);
                     pst2.setInt(1, Integer.parseInt(newId));
                     results2 = db.retrieveQuery(conn2, pst2);
-
+                    response.setStatus(200);
                 } catch (SQLException e) {
                     e.printStackTrace();
+                    response.setStatus(400);
                 }
 
 
@@ -432,6 +383,7 @@ public class UserOrderController {
         HttpSession session;
         session = request.getSession();
         session.invalidate();
+        response.setStatus(200);
     }
 
 
