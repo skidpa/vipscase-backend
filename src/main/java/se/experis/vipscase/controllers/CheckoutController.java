@@ -2,8 +2,7 @@ package se.experis.vipscase.controllers;
 
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
-import com.stripe.model.Charge;
-import com.stripe.model.PaymentIntent;
+import com.stripe.model.*;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.RequestOptions;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
@@ -130,5 +130,105 @@ public class CheckoutController {
             return null;
         }
     }
+
+    @GetMapping("stripe/setupintent")
+    @ResponseBody
+    public String stripeSetupIntent(HttpServletResponse response, HttpServletRequest request/*, @RequestBody StripePay pay*/){
+
+        Stripe.apiKey = stripeKey;
+        List<Object> paymentMethodTypes = new ArrayList<>();
+        paymentMethodTypes.add("card");
+        Map<String, Object> params = new HashMap<>();
+        params.put("payment_method_types", paymentMethodTypes);
+        params.put("usage", "on_session"); // setup_future_usage ?
+
+
+        try {
+            SetupIntent setupIntent = SetupIntent.create(params);
+            System.out.println("returning setupintent");
+            response.setStatus(201);
+            return setupIntent.toJson();
+        } catch (StripeException e){
+            e.printStackTrace();
+            response.setStatus(400);
+            return null;
+        }
+    }
+
+    @PostMapping("stripe/webhook")
+    @ResponseBody
+    public String stripeSaveCard(HttpServletResponse response, HttpServletRequest request, @RequestBody StripePay pay){
+        Stripe.apiKey = stripeKey;
+        String payload = request.toString();
+        System.out.println("pay load: " + payload);
+        Event event = null;
+
+        EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
+        StripeObject stripeObj = null;
+        if(dataObjectDeserializer.getObject().isPresent()){
+            stripeObj = dataObjectDeserializer.getObject().get();
+        } else {
+            System.out.println("event object deserialization failed...");
+        }
+
+        //handle the event...
+        switch (event.getType()){
+            case "payment_intent.succeeded":
+                System.out.println("PaymentIntent was successful");
+                break;
+            case "payment_method.attached":
+                PaymentMethod paymentMethod = (PaymentMethod) stripeObj;
+                System.out.println("Payment was attached to a customer");
+                break;
+            default:
+                response.setStatus(400);
+                return "";
+        }
+
+        response.setStatus(200);
+        return "";
+
+        /*PaymentIntent intent = (PaymentIntent) stripeObj;
+        Map<String, Object> customerParams = new HashMap<String, Object>();
+        customerParams.put("payment_method", intent.getPaymentMethod());
+        Customer customer = null;
+        try {
+            customer.create(customerParams);
+            System.out.println("customer" + customer);
+            response.setStatus(201);
+            return "yayyy";
+        } catch (StripeException e) {
+            e.printStackTrace();
+            response.setStatus(400);
+            return null;
+        }*/
+
+        /*
+
+        Map<String, Object> paymentIntentParams = new HashMap<String, Object>();
+        paymentIntentParams.put("amount", pay.getAmount());
+        paymentIntentParams.put("currency", "sek");
+        ArrayList payment_method_types = new ArrayList();
+        payment_method_types.add("card");
+        paymentIntentParams.put("payment_method_types", payment_method_types);
+        PaymentIntent intent = null;
+
+        try {
+            // idempotency
+            RequestOptions options = RequestOptions.builder()
+                    .setIdempotencyKey(pay.getIdempotencyThing())
+                    .build();
+
+            intent = PaymentIntent.create(paymentIntentParams, options);
+            response.setStatus(201);
+            return intent.toJson();
+        } catch (StripeException e){
+            e.printStackTrace();
+            response.setStatus(400);
+            return null;
+        }*/
+
+    }
+
 
 }

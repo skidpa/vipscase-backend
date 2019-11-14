@@ -1,21 +1,17 @@
 package se.experis.vipscase.controllers;
 
-
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import se.experis.vipscase.model.Order;
-import se.experis.vipscase.model.StripePay;
 import se.experis.vipscase.model.User;
 import se.experis.vipscase.model.Product;
 import se.experis.vipscase.Database;
-
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
@@ -170,6 +166,9 @@ public class UserOrderController {
                 response.setStatus(200);
                 Cookie cook = new Cookie("test", "s");
                 response.addCookie(cook);
+                //HttpHeaders h = new HttpHeaders();
+                //h.set("Header name", "BANANANNANANANA");
+                //return response;
 
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -179,7 +178,7 @@ public class UserOrderController {
             response.setStatus(400);
         }
         //PA
-        //return null;
+        //return response;
 
     }
 
