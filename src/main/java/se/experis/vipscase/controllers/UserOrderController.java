@@ -1,21 +1,17 @@
 package se.experis.vipscase.controllers;
 
-
-import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import se.experis.vipscase.model.Order;
-import se.experis.vipscase.model.StripePay;
 import se.experis.vipscase.model.User;
 import se.experis.vipscase.model.Product;
 import se.experis.vipscase.Database;
-
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
@@ -170,6 +166,9 @@ public class UserOrderController {
                 response.setStatus(200);
                 Cookie cook = new Cookie("test", "s");
                 response.addCookie(cook);
+                //HttpHeaders h = new HttpHeaders();
+                //h.set("Header name", "BANANANNANANANA");
+                //return response;
 
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -179,7 +178,7 @@ public class UserOrderController {
             response.setStatus(400);
         }
         //PA
-        //return null;
+        //return response;
 
     }
 
@@ -268,15 +267,20 @@ public class UserOrderController {
     //Lists all orders
     @GetMapping("/orders")
     public ArrayList<ArrayList<Object[]>> getOrders(HttpServletRequest request, HttpServletResponse response) {
-
-        Object session = request.getSession().getAttribute("se");
-        int userId = Integer.parseInt(session.toString());
+        System.out.println("271");
+       // Object session = request.getSession().getAttribute("se");
+       // int userId1 = Integer.parseInt(session.toString());
+        System.out.println("274");
         Database db = new Database();
         Connection conn = db.connectToDb();
 
+        int userId = 26;
+        System.out.println("Set userId: " + 26 + " on row 278");
+        System.out.println("278");
         ArrayList<Object[]> results = new ArrayList<>();
         String sqlQuery = "SELECT id FROM orders WHERE customer_id = ?";
         try {
+            System.out.println("282");
 
             PreparedStatement pst = conn.prepareStatement(sqlQuery);
             pst.setInt(1, userId);
@@ -284,6 +288,8 @@ public class UserOrderController {
 
 
         } catch (SQLException e) {
+            System.out.println("290");
+
             e.printStackTrace();
         }
 
@@ -300,20 +306,24 @@ public class UserOrderController {
             newId = id_from_orders.substring(1, id_from_orders.length()-1);
             sqlQuery2 = "SELECT order_id, product_id, status FROM order_details WHERE order_id = ?";
 
-
+            System.out.println("305");
             try {
+                System.out.println("307");
                PreparedStatement pst2 = conn2.prepareStatement(sqlQuery2);
                pst2.setInt(1, Integer.parseInt(newId));
                 try {
+                    System.out.println("310");
                     results2 = db.retrieveQuery(conn2, pst2);
                     finalResults.add(results2);
                     response.setStatus(200);
 
                 } catch (Exception e) {
+                    System.out.println("317");
                     e.printStackTrace();
                 }
 
             } catch (SQLException e) {
+                System.out.println("322");
                 e.printStackTrace();
                 response.setStatus(400);
             }
