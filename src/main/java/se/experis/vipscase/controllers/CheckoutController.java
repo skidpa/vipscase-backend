@@ -180,7 +180,7 @@ public class CheckoutController {
             StringBuilder result = new StringBuilder();
             String line;
             while((line = buff.readLine()) != null){
-                result.append(line)
+                result.append(line);
             }
 
             System.out.println(result);
