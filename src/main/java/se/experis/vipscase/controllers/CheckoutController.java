@@ -1,5 +1,6 @@
 package se.experis.vipscase.controllers;
 
+import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
@@ -7,6 +8,9 @@ import com.stripe.model.*;
 import com.stripe.model.checkout.Session;
 import com.stripe.net.ApiResource;
 import com.stripe.net.RequestOptions;
+import com.stripe.param.PaymentIntentCreateParams;
+import com.stripe.param.PaymentMethodListParams;
+import com.stripe.param.PaymentMethodRetrieveParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -114,7 +118,98 @@ public class CheckoutController {
 
         Stripe.apiKey = stripeKey;
 
+        //test for existing customer..
+        //first get the payment method from stripe.
+        PaymentMethodListParams listParams = new PaymentMethodListParams
+                .Builder()
+                .setCustomer("cus_GBQkIuF2RLIpF2")
+                .setType(PaymentMethodListParams.Type.CARD)
+                .build();
 
+        PaymentMethodCollection paymentMethods = null;
+        try {
+            paymentMethods = PaymentMethod.list(listParams);
+        } catch (StripeException e) {
+            e.printStackTrace();
+        }
+
+
+        //JsonObject hmmz = paymentMethods.getRawJsonObject();
+        //System.out.println("adsada: " + hmmz.get("data").getAsJsonArray().get(0).getAsJsonObject().get("id"));
+
+        String paymentmethod = null;
+        try {
+            paymentmethod = paymentMethods
+                    .getRawJsonObject()
+                    .get("data")
+                    .getAsJsonArray()
+                    .get(0)
+                    .getAsJsonObject()
+                    .get("id")
+                    .toString();
+            paymentmethod = paymentmethod.substring(1, paymentmethod.length() -1);
+        } catch (Exception e) {
+            //e.printStackTrace();
+        }
+
+        System.out.println("HOPPAS: " + paymentmethod);
+        //String str = paymentMethods;
+
+
+
+        //System.out.println("get data 0" + paymentMethods.getData().get(0).toJson());
+
+
+
+        PaymentIntentCreateParams createParams = null;
+        /*try {
+            createParams = new PaymentIntentCreateParams.Builder()
+                    .setCurrency("sek")
+                    .setAmount(pay.getAmount())
+                    .setCustomer("cus_GBQkIuF2RLIpF2")
+                    .setPaymentMethod(paymentmethod)
+                    .setConfirm(true)
+                    .setOffSession(false)
+                    .build();
+            response.setStatus(200);
+            //return null;
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            response.setStatus(400);
+            //return null;
+        }*/
+        //return createParams.getCurrency();
+        //return null;
+        PaymentIntent intent = null;
+        try {
+            createParams = new PaymentIntentCreateParams.Builder()
+                    .setCurrency("sek")
+                    .setAmount(pay.getAmount())
+                    .setCustomer("cus_GBQkIuF2RLIpF2")
+                    .setPaymentMethod(paymentmethod)
+                    .setConfirm(true)
+                    .setOffSession(false)
+                    .build();
+            intent = PaymentIntent.create(createParams);
+
+            response.setStatus(200);
+            return intent.toJson();
+        } catch (StripeException e) {
+            System.out.println("Error code is : " + e.getCode() + "\n" +e.getMessage());
+            String paymentIntentId = e.getStripeError().getPaymentIntent().getId();
+            /*PaymentIntent paymentIntent = null;
+            try {
+                paymentIntent = PaymentIntent.retrieve(paymentIntentId);
+            } catch (StripeException ex) {
+                ex.printStackTrace();
+            }*/
+            //System.out.println(paymentIntent.getId());
+            response.setStatus(400);
+            return null;
+        }
+
+        /*
+        // this works for non customers
         Map<String, Object> paymentIntentParams = new HashMap<String, Object>();
         paymentIntentParams.put("amount", pay.getAmount());
         paymentIntentParams.put("currency", "sek");
@@ -148,7 +243,7 @@ public class CheckoutController {
             e.printStackTrace();
             response.setStatus(400);
             return null;
-        }
+        }*/
     }
 
     @GetMapping("stripe/setupintent")
@@ -240,6 +335,7 @@ public class CheckoutController {
                             System.out.println("customer created");
                             System.out.println("customer: " + customer.toJson());
                             System.out.println("\n now save something in our db :D \n");
+                            //w probably want to save the customerid and the payment method..
                             response.setStatus(201);
                         } catch (StripeException e) {
                             e.printStackTrace();
