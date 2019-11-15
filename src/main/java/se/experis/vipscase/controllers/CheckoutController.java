@@ -1,9 +1,11 @@
 package se.experis.vipscase.controllers;
 
+import com.google.gson.JsonSyntaxException;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.*;
 import com.stripe.model.checkout.Session;
+import com.stripe.net.ApiResource;
 import com.stripe.net.RequestOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -12,12 +14,17 @@ import se.experis.vipscase.model.StripePay;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = {"http://localhost:3000", "https://pa-vips-front.herokuapp.com"}, maxAge = 3600)
+@CrossOrigin(origins = {"http://localhost:3000", "https://pa-vips-front.herokuapp.com/checkout"}, maxAge = 3600)
+//@CrossOrigin( maxAge = 3600)
 @RestController
 public class CheckoutController {
 
@@ -107,12 +114,16 @@ public class CheckoutController {
 
         Stripe.apiKey = stripeKey;
 
+
         Map<String, Object> paymentIntentParams = new HashMap<String, Object>();
         paymentIntentParams.put("amount", pay.getAmount());
         paymentIntentParams.put("currency", "sek");
         ArrayList payment_method_types = new ArrayList();
         payment_method_types.add("card");
         paymentIntentParams.put("payment_method_types", payment_method_types);
+        Map<String, String> initalMetadata = new HashMap<String, String>();
+        initalMetadata.put("save_card", Boolean.toString(pay.isSaveCard())); // Can place stuff in meta data whatever we want...
+        paymentIntentParams.put("metadata", initalMetadata);
         PaymentIntent intent = null;
 
         try {
@@ -122,6 +133,15 @@ public class CheckoutController {
                     .build();
 
             intent = PaymentIntent.create(paymentIntentParams, options);
+            if(pay.isSaveCard()){
+                System.out.println("save the customer...");
+                Map<String, Object> customerParams = new HashMap<String,Object>();
+                System.out.println("setting payment method");
+                System.out.println("payment_method: " + intent);
+                //customerParams.put("payment_method", intent.getPaymentMethod());
+                //Customer customer = Customer.create(customerParams);
+                //System.out.println("customer: " + customer);
+            }
             response.setStatus(201);
             return intent.toJson();
         } catch (StripeException e){
@@ -157,11 +177,71 @@ public class CheckoutController {
 
     @PostMapping("stripe/webhook")
     @ResponseBody
-    public String stripeSaveCard(HttpServletResponse response, HttpServletRequest request, @RequestBody StripePay pay){
+    public Object stripeSaveCard(HttpServletResponse response, HttpServletRequest request/*, @RequestBody StripePay pay*/){
         Stripe.apiKey = stripeKey;
-        String payload = request.toString();
-        System.out.println("pay load: " + payload);
+        String payload ="";
+        StringBuilder result = null;
+        try {
+            payload = request.getInputStream().toString();
+            InputStream in = request.getInputStream();
+            BufferedReader buff = new BufferedReader( new InputStreamReader(in));
+            result = new StringBuilder();
+            String line;
+            while((line = buff.readLine()) != null){
+                result.append(line);
+            }
+
+            //System.out.println(result);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        //System.out.println("pay load: " + payload);
+        System.out.println("Trying stripe stuff");
         Event event = null;
+
+        try {
+            event = ApiResource.GSON.fromJson(String.valueOf(result), Event.class);
+        } catch (JsonSyntaxException e) {
+            e.printStackTrace();
+            System.out.println("failed to convert to json?");
+            response.setStatus(400);
+            return "";
+        }
+
+        EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
+        StripeObject stripeObject = null;
+        if(dataObjectDeserializer.getObject().isPresent()){
+            System.out.println("dataObjectDeserializer present...");
+            stripeObject = dataObjectDeserializer.getObject().get();
+        } else {
+            System.out.println("deserialization failed");
+        }
+
+        switch (event.getType()){
+            case "payment_intent.succeeded":
+                System.out.println("payment_intent.succeeded!!");
+                PaymentIntent intent = (PaymentIntent) stripeObject;
+                try {
+                    System.out.println(intent.getMetadata());
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                }
+                break;
+            case "payment_method.attached":
+                System.out.println("payment_method.attached charge card again?");
+                break;
+            default:
+                response.setStatus(400);
+                return "";
+        }
+
+
+
+
+        response.setStatus(201);
+        return "";
+        /*Event event = null;
 
         EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
         StripeObject stripeObj = null;
@@ -182,11 +262,11 @@ public class CheckoutController {
                 break;
             default:
                 response.setStatus(400);
-                return "";
+                //return "";
         }
 
-        response.setStatus(200);
-        return "";
+        response.setStatus(200);*/
+        //return "";
 
         /*PaymentIntent intent = (PaymentIntent) stripeObj;
         Map<String, Object> customerParams = new HashMap<String, Object>();
