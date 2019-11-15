@@ -173,8 +173,9 @@ public class CheckoutController {
     @ResponseBody
     public Object stripeSaveCard(HttpServletResponse response, HttpServletRequest request/*, @RequestBody StripePay pay*/){
         Stripe.apiKey = stripeKey;
-        String payload = request.toString();
+         String payload ="";
         try {
+            payload = request.getInputStream().toString();
             InputStream in = request.getInputStream();
             BufferedReader buff = new BufferedReader( new InputStreamReader(in));
             StringBuilder result = new StringBuilder();
