@@ -24,7 +24,6 @@ public class UserOrderController {
 
 
 
-
     @PostMapping("/order")
     @ResponseBody
     public void postOrder(HttpServletResponse response, @RequestBody Order order) {
@@ -131,8 +130,9 @@ public class UserOrderController {
         Database db = new Database();
         ArrayList<Object[]> userCred = new ArrayList<>();
         String newHashed = "", dbPass = "";
-
+        System.out.println("In LoginUser");
         Connection conn = db.connectToDb();
+        String usrid = "";
         String sql = "SELECT customerpass FROM customers WHERE email= ?";
         try {
 
@@ -158,17 +158,19 @@ public class UserOrderController {
                 pst2.setString(1, user.getEmail());
                 userCred = db.retrieveQuery(conn2, pst2);
 
-                String usrid = Arrays.toString(userCred.get(0));
+                usrid = Arrays.toString(userCred.get(0));
                 usrid = usrid.substring(1, usrid.length() -1);
 
-                HttpSession session = request.getSession();
+                /*HttpSession session = request.getSession();
                 session.setAttribute("se",usrid);
+                Cookie cook = new Cookie("id", usrid);
+                response.addCookie(cook);*/
                 response.setStatus(200);
-                Cookie cook = new Cookie("test", "s");
-                response.addCookie(cook);
+
                 //HttpHeaders h = new HttpHeaders();
                 //h.set("Header name", "BANANANNANANANA");
                 //return response;
+                System.out.println("Logged in!");
 
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -177,9 +179,8 @@ public class UserOrderController {
             System.out.println("Hacker be Gone!");
             response.setStatus(400);
         }
-        //PA
-        //return response;
 
+        //PA
     }
 
 
@@ -273,6 +274,7 @@ public class UserOrderController {
         System.out.println("274");
         Database db = new Database();
         Connection conn = db.connectToDb();
+
 
         int userId = 26;
         System.out.println("Set userId: " + 26 + " on row 278");
