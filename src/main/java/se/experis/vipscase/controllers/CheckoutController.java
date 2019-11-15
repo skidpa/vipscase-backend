@@ -123,6 +123,15 @@ public class CheckoutController {
                     .build();
 
             intent = PaymentIntent.create(paymentIntentParams, options);
+            if(pay.isSaveCard()){
+                System.out.println("save the customer...");
+                Map<String, Object> customerParams = new HashMap<String,Object>();
+                System.out.println("setting payment method");
+                System.out.println("payment_method: " + intent);
+                //customerParams.put("payment_method", intent.getPaymentMethod());
+                //Customer customer = Customer.create(customerParams);
+                //System.out.println("customer: " + customer);
+            }
             response.setStatus(201);
             return intent.toJson();
         } catch (StripeException e){

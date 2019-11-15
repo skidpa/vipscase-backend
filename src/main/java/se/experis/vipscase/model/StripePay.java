@@ -15,6 +15,7 @@ public class StripePay {
     private String stripeToken;
     private String idempotencyThing;
     private String token_id;
+    private boolean saveCard = false;
 
 
     public StripePay() {
@@ -30,6 +31,14 @@ public class StripePay {
 
     // nya
 
+
+    public boolean isSaveCard() {
+        return saveCard;
+    }
+
+    public void setSaveCard(boolean saveCard) {
+        this.saveCard = saveCard;
+    }
 
     public String getToken_id() {
         return token_id;
