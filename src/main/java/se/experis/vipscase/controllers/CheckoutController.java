@@ -223,7 +223,7 @@ public class CheckoutController {
                 System.out.println("payment_intent.succeeded!!");
                 PaymentIntent intent = (PaymentIntent) stripeObject;
                 try {
-                    System.out.println(intent.getMetadata());
+                    System.out.println("Save card: " + intent.getMetadata().containsKey("save_card"));
                 } catch (NullPointerException e) {
                     e.printStackTrace();
                 }
