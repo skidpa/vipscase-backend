@@ -223,7 +223,14 @@ public class CheckoutController {
                 System.out.println("payment_intent.succeeded!!");
                 PaymentIntent intent = (PaymentIntent) stripeObject;
                 try {
-                    System.out.println("Save card: " + intent.getMetadata().containsKey("save_card"));
+                    System.out.println("\n\nmeta contains Save card: " + intent.getMetadata().containsKey("save_card")
+                     + "\n\n meta contains key value true: " + intent.getMetadata().containsValue("true") + "\n\n");
+
+                    System.out.println("meta value is true: " + intent.getMetadata().get("save_card").contains("true")
+                    + "\n\n meta value: " + intent.getMetadata().get("save_card"));
+                    if(intent.getMetadata().containsKey("save_card") && intent.getMetadata().containsValue("true")){
+                        System.out.println("YAAAAYYY");
+                    }
                 } catch (NullPointerException e) {
                     e.printStackTrace();
                 }
