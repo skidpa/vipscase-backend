@@ -228,7 +228,7 @@ public class CheckoutController {
 
                     System.out.println("meta value is true: " + intent.getMetadata().get("save_card").contains("true")
                     + "\n\n meta value: " + intent.getMetadata().get("save_card"));
-                    if(intent.getMetadata().containsKey("save_card") && intent.getMetadata().containsValue("true")){
+                    if(intent.getMetadata().get("save_card").equals("true")){
                         System.out.println("YAAAAYYY");
                     }
                 } catch (NullPointerException e) {
