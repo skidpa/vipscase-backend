@@ -1,9 +1,11 @@
 package se.experis.vipscase.controllers;
 
+import com.google.gson.JsonSyntaxException;
 import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.*;
 import com.stripe.model.checkout.Session;
+import com.stripe.net.ApiResource;
 import com.stripe.net.RequestOptions;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -174,25 +176,61 @@ public class CheckoutController {
     public Object stripeSaveCard(HttpServletResponse response, HttpServletRequest request/*, @RequestBody StripePay pay*/){
         Stripe.apiKey = stripeKey;
          String payload ="";
+        StringBuilder result = null;
         try {
             payload = request.getInputStream().toString();
             InputStream in = request.getInputStream();
             BufferedReader buff = new BufferedReader( new InputStreamReader(in));
-            StringBuilder result = new StringBuilder();
+            result = new StringBuilder();
             String line;
             while((line = buff.readLine()) != null){
                 result.append(line);
             }
 
-            System.out.println(result);
+            //System.out.println(result);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        System.out.println("pay load: " + payload);
-        System.out.println("webhook");
-        response.setStatus(418);
-        return null;
+        //System.out.println("pay load: " + payload);
+        System.out.println("Trying stripe stuff");
+        Event event = null;
+
+        try {
+            event = ApiResource.GSON.fromJson(String.valueOf(result), Event.class);
+        } catch (JsonSyntaxException e) {
+            e.printStackTrace();
+            System.out.println("failed to convert to json?");
+            response.setStatus(400);
+            return "";
+        }
+
+        EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
+        StripeObject stripeObject = null;
+        if(dataObjectDeserializer.getObject().isPresent()){
+            System.out.println("dataObjectDeserializer present...");
+            stripeObject = dataObjectDeserializer.getObject().get();
+        } else {
+            System.out.println("deserialization failed");
+        }
+
+        switch (event.getType()){
+            case "payment_intent.succeeded":
+                System.out.println("payment_intent.succeeded!!");
+                break;
+            case "payment_method.attached":
+                System.out.println("payment_method.attached charge card again?");
+                break;
+            default:
+                response.setStatus(400);
+                return "";
+        }
+
+
+
+
+        response.setStatus(201);
+        return "";
         /*Event event = null;
 
         EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
