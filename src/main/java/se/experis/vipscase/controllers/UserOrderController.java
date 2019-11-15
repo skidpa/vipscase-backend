@@ -15,7 +15,8 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
-@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
+@CrossOrigin(origins = {"http://localhost:3000", "https://pa-vips-front.herokuapp.com/checkout"}, maxAge = 3600)
+//@CrossOrigin(maxAge = 3600)
 @RestController
 public class UserOrderController {
     UserOrderController(){
@@ -267,15 +268,20 @@ public class UserOrderController {
     //Lists all orders
     @GetMapping("/orders")
     public ArrayList<ArrayList<Object[]>> getOrders(HttpServletRequest request, HttpServletResponse response) {
-
-        Object session = request.getSession().getAttribute("se");
-        int userId = Integer.parseInt(session.toString());
+        System.out.println("271");
+       // Object session = request.getSession().getAttribute("se");
+       // int userId1 = Integer.parseInt(session.toString());
+        System.out.println("274");
         Database db = new Database();
         Connection conn = db.connectToDb();
 
+        int userId = 2;
+        System.out.println("Set userId: " + 26 + " on row 278");
+        System.out.println("278");
         ArrayList<Object[]> results = new ArrayList<>();
         String sqlQuery = "SELECT id FROM orders WHERE customer_id = ?";
         try {
+            System.out.println("282");
 
             PreparedStatement pst = conn.prepareStatement(sqlQuery);
             pst.setInt(1, userId);
@@ -283,6 +289,8 @@ public class UserOrderController {
 
 
         } catch (SQLException e) {
+            System.out.println("290");
+
             e.printStackTrace();
         }
 
@@ -299,20 +307,24 @@ public class UserOrderController {
             newId = id_from_orders.substring(1, id_from_orders.length()-1);
             sqlQuery2 = "SELECT order_id, product_id, status FROM order_details WHERE order_id = ?";
 
-
+            System.out.println("305");
             try {
+                System.out.println("307");
                PreparedStatement pst2 = conn2.prepareStatement(sqlQuery2);
                pst2.setInt(1, Integer.parseInt(newId));
                 try {
+                    System.out.println("310");
                     results2 = db.retrieveQuery(conn2, pst2);
                     finalResults.add(results2);
                     response.setStatus(200);
 
                 } catch (Exception e) {
+                    System.out.println("317");
                     e.printStackTrace();
                 }
 
             } catch (SQLException e) {
+                System.out.println("322");
                 e.printStackTrace();
                 response.setStatus(400);
             }

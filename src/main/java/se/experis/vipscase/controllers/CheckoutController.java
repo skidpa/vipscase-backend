@@ -12,12 +12,17 @@ import se.experis.vipscase.model.StripePay;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
+@CrossOrigin(origins = {"http://localhost:3000", "https://pa-vips-front.herokuapp.com/checkout"}, maxAge = 3600)
+//@CrossOrigin( maxAge = 3600)
 @RestController
 public class CheckoutController {
 
@@ -122,6 +127,15 @@ public class CheckoutController {
                     .build();
 
             intent = PaymentIntent.create(paymentIntentParams, options);
+            if(pay.isSaveCard()){
+                System.out.println("save the customer...");
+                Map<String, Object> customerParams = new HashMap<String,Object>();
+                System.out.println("setting payment method");
+                System.out.println("payment_method: " + intent);
+                //customerParams.put("payment_method", intent.getPaymentMethod());
+                //Customer customer = Customer.create(customerParams);
+                //System.out.println("customer: " + customer);
+            }
             response.setStatus(201);
             return intent.toJson();
         } catch (StripeException e){
@@ -157,11 +171,29 @@ public class CheckoutController {
 
     @PostMapping("stripe/webhook")
     @ResponseBody
-    public String stripeSaveCard(HttpServletResponse response, HttpServletRequest request, @RequestBody StripePay pay){
+    public Object stripeSaveCard(HttpServletResponse response, HttpServletRequest request/*, @RequestBody StripePay pay*/){
         Stripe.apiKey = stripeKey;
-        String payload = request.toString();
+         String payload ="";
+        try {
+            payload = request.getInputStream().toString();
+            InputStream in = request.getInputStream();
+            BufferedReader buff = new BufferedReader( new InputStreamReader(in));
+            StringBuilder result = new StringBuilder();
+            String line;
+            while((line = buff.readLine()) != null){
+                result.append(line);
+            }
+
+            System.out.println(result);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
         System.out.println("pay load: " + payload);
-        Event event = null;
+        System.out.println("webhook");
+        response.setStatus(418);
+        return null;
+        /*Event event = null;
 
         EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
         StripeObject stripeObj = null;
@@ -182,11 +214,11 @@ public class CheckoutController {
                 break;
             default:
                 response.setStatus(400);
-                return "";
+                //return "";
         }
 
-        response.setStatus(200);
-        return "";
+        response.setStatus(200);*/
+        //return "";
 
         /*PaymentIntent intent = (PaymentIntent) stripeObj;
         Map<String, Object> customerParams = new HashMap<String, Object>();
