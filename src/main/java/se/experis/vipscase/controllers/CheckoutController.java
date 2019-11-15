@@ -114,12 +114,16 @@ public class CheckoutController {
 
         Stripe.apiKey = stripeKey;
 
+
         Map<String, Object> paymentIntentParams = new HashMap<String, Object>();
         paymentIntentParams.put("amount", pay.getAmount());
         paymentIntentParams.put("currency", "sek");
         ArrayList payment_method_types = new ArrayList();
         payment_method_types.add("card");
         paymentIntentParams.put("payment_method_types", payment_method_types);
+        Map<String, String> initalMetadata = new HashMap<String, String>();
+        initalMetadata.put("save_card", Boolean.toString(pay.isSaveCard())); // Can place stuff in meta data whatever we want...
+        paymentIntentParams.put("metadata", initalMetadata);
         PaymentIntent intent = null;
 
         try {
@@ -175,7 +179,7 @@ public class CheckoutController {
     @ResponseBody
     public Object stripeSaveCard(HttpServletResponse response, HttpServletRequest request/*, @RequestBody StripePay pay*/){
         Stripe.apiKey = stripeKey;
-         String payload ="";
+        String payload ="";
         StringBuilder result = null;
         try {
             payload = request.getInputStream().toString();
@@ -217,6 +221,12 @@ public class CheckoutController {
         switch (event.getType()){
             case "payment_intent.succeeded":
                 System.out.println("payment_intent.succeeded!!");
+                PaymentIntent intent = (PaymentIntent) stripeObject;
+                try {
+                    System.out.println(intent.getMetadata());
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+                }
                 break;
             case "payment_method.attached":
                 System.out.println("payment_method.attached charge card again?");
