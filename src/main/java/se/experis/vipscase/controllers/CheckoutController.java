@@ -12,6 +12,10 @@ import se.experis.vipscase.model.StripePay;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -170,6 +174,19 @@ public class CheckoutController {
     public Object stripeSaveCard(HttpServletResponse response, HttpServletRequest request/*, @RequestBody StripePay pay*/){
         Stripe.apiKey = stripeKey;
         String payload = request.toString();
+        try {
+            InputStream in = request.getInputStream();
+            BufferedReader buff = new BufferedReader( new InputStreamReader(in));
+            StringBuilder result = new StringBuilder();
+            String line;
+            while((line = buff.readLine()) != null){
+                result.append(line)
+            }
+
+            System.out.println(result);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         System.out.println("pay load: " + payload);
         System.out.println("webhook");
