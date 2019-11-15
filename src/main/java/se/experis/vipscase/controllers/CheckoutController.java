@@ -229,15 +229,29 @@ public class CheckoutController {
                     System.out.println("meta value is true: " + intent.getMetadata().get("save_card").contains("true")
                     + "\n\n meta value: " + intent.getMetadata().get("save_card"));
                     if(intent.getMetadata().get("save_card").equals("true")){
-                        System.out.println("YAAAAYYY");
+                        System.out.println("Saving Customer...");
+                        Map<String, Object> customerParams = new HashMap<String, Object>();
+                        customerParams.put("payment_method", intent.getPaymentMethod());
+                        Customer customer = null;
+
+                        try {
+                            System.out.println("Creating customer");
+                            customer = Customer.create(customerParams);
+                            System.out.println("customer created");
+                            System.out.println("customer: " + customer.toJson());
+                            System.out.println("\n now save something in our db :D \n");
+                            response.setStatus(201);
+                        } catch (StripeException e) {
+                            e.printStackTrace();
+                        }
                     }
                 } catch (NullPointerException e) {
                     e.printStackTrace();
                 }
                 break;
-            case "payment_method.attached":
+            /*case "payment_method.attached":
                 System.out.println("payment_method.attached charge card again?");
-                break;
+                break;*/
             default:
                 response.setStatus(400);
                 return "";
