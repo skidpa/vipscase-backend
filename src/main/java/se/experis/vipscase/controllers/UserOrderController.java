@@ -15,7 +15,8 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
-@CrossOrigin(origins = "http://localhost:3000", maxAge = 3600)
+@CrossOrigin(origins = {"http://localhost:3000", "https://pa-vips-front.herokuapp.com/checkout"}, maxAge = 3600)
+//@CrossOrigin(maxAge = 3600)
 @RestController
 public class UserOrderController {
     UserOrderController(){
@@ -274,7 +275,7 @@ public class UserOrderController {
         Database db = new Database();
         Connection conn = db.connectToDb();
 
-        int userId = 26;
+        int userId = 2;
         System.out.println("Set userId: " + 26 + " on row 278");
         System.out.println("278");
         ArrayList<Object[]> results = new ArrayList<>();
