@@ -275,7 +275,7 @@ public class UserOrderController {
         Database db = new Database();
         Connection conn = db.connectToDb();
 
-        int userId = 26;
+        int userId = 2;
         System.out.println("Set userId: " + 26 + " on row 278");
         System.out.println("278");
         ArrayList<Object[]> results = new ArrayList<>();
