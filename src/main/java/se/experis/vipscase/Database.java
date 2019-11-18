@@ -12,8 +12,10 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
+
 public class Database {
-    private boolean live = false;
+    private boolean live = true;
 
     public Database(){
 
@@ -30,8 +32,12 @@ public class Database {
 
         //Parameterized query, fixed in UserOrderController
         ArrayList<Object[]> results = new ArrayList<Object[]>();
-
-        
+       /* try {
+            System.out.println("1");
+            TimeUnit.SECONDS.sleep(5);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }*/
         boolean isResult = false;
         boolean gotResult = false;
         try {
@@ -42,10 +48,24 @@ public class Database {
             e.printStackTrace();
         } finally {
             do {
+                /*try {
+                    System.out.println("2");
+
+                    TimeUnit.SECONDS.sleep(5);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }*/
                 assert pst != null;
                 try (ResultSet rs = pst.getResultSet()) {
 
                     while (rs.next()) {
+                       /* try {
+                            System.out.println("3");
+
+                            TimeUnit.SECONDS.sleep(5);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }*/
                         gotResult = true;
                         int columns = rs.getMetaData().getColumnCount();
                         Object[] arr = new Object[columns];
