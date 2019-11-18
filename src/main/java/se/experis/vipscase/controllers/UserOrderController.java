@@ -15,8 +15,8 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
-@CrossOrigin(origins = {"http://localhost:3000", "https://pa-vips-front.herokuapp.com/checkout"}, maxAge = 3600)
-//@CrossOrigin(maxAge = 3600)
+@CrossOrigin(origins = {"http://localhost:3000", "https://pa-vips-front.herokuapp.com"}, maxAge = 3600)
+//@CrossOrigin(origins = {"*"}, maxAge = 3600)
 @RestController
 public class UserOrderController {
     UserOrderController(){
@@ -265,7 +265,7 @@ public class UserOrderController {
         return finalResults;
     }
 
-    //Lists all orders
+    //Lists all orders for user
     @GetMapping("/orders")
     public ArrayList<ArrayList<Object[]>> getOrders(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("271");
@@ -336,13 +336,14 @@ public class UserOrderController {
         return finalResults;
     }
 
-    //Lists all orders
+    //Lists order by id
     @GetMapping("/order/{order_id}")
     @ResponseBody
     public ArrayList<Object[]> getOrderById(HttpServletRequest request, HttpServletResponse response, @PathVariable String order_id) {
 
-        Object session = request.getSession().getAttribute("se");
-        int userId = Integer.parseInt(session.toString());
+        //Object session = request.getSession().getAttribute("se");
+        //int userId = Integer.parseInt(session.toString());
+        int userId = 1;
         Database db = new Database();
         Connection conn = db.connectToDb();
         String sqlQuery1 = "SELECT id FROM orders WHERE customer_id = ?";
