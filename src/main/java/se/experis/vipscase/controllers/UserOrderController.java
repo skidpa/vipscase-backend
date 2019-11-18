@@ -1,5 +1,6 @@
 package se.experis.vipscase.controllers;
 
+import org.postgresql.jdbc.PreferQueryMode;
 import org.springframework.web.bind.annotation.*;
 
 import se.experis.vipscase.model.Order;
@@ -15,8 +16,8 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
-@CrossOrigin(origins = {"http://localhost:3000", "https://pa-vips-front.herokuapp.com"}, maxAge = 3600)
-//@CrossOrigin(origins = {"*"}, maxAge = 3600)
+@CrossOrigin(allowCredentials = "true", origins = {"http://localhost:3000", "https://pa-vips-front.herokuapp.com/checkout"}, maxAge = 3600)
+//@CrossOrigin(maxAge = 3600)
 @RestController
 public class UserOrderController {
     UserOrderController(){
@@ -125,6 +126,7 @@ public class UserOrderController {
 
     }
 
+    @CrossOrigin(origins = "http://localhost:3000")
     @PostMapping("/login")
     @ResponseBody
     public void loginUser(HttpServletResponse response, HttpServletRequest request, @RequestBody User user) {
@@ -132,7 +134,9 @@ public class UserOrderController {
         Database db = new Database();
         ArrayList<Object[]> userCred = new ArrayList<>();
         String newHashed = "", dbPass = "";
-
+        System.out.println("User id:");
+        System.out.println(user.getId());
+        System.out.println(user.toString());
         Connection conn = db.connectToDb();
         String sql = "SELECT customerpass FROM customers WHERE email= ?";
         try {
@@ -145,14 +149,14 @@ public class UserOrderController {
             dbPass = dbPass.substring(1, dbPass.length() -1);
 
             newHashed = db.hashStuff(user.getPassword());
+            System.out.println("Try: newhashed: " + newHashed);
 
         } catch (SQLException e) {
             e.printStackTrace();
         }
         Connection conn2 = db.connectToDb();
-
         if(newHashed.equals(dbPass)) {
-
+            System.out.println("Lösenord stämmer, kollar ID i password checken");
             String userSql = "SELECT id FROM customers WHERE email= ?";
             try {
                 PreparedStatement pst2 = conn2.prepareStatement(userSql);
@@ -161,15 +165,28 @@ public class UserOrderController {
 
                 String usrid = Arrays.toString(userCred.get(0));
                 usrid = usrid.substring(1, usrid.length() -1);
+                System.out.println("User id: " + usrid);
 
-                HttpSession session = request.getSession();
-                session.setAttribute("se",usrid);
-                response.setStatus(200);
-                Cookie cook = new Cookie("test", "s");
-                response.addCookie(cook);
-                //HttpHeaders h = new HttpHeaders();
-                //h.set("Header name", "BANANANNANANANA");
-                //return response;
+
+                //Sessions
+                HttpSession sess = request.getSession();
+                //if (sess.isNew()) {
+
+                    System.out.println("New session created for user with static ID: " + usrid);
+                    System.out.println("Session ID: " + sess.getId());
+                    sess.setAttribute("Snus", usrid);
+                    sess.setMaxInactiveInterval(15*60);
+
+                    String uid = usrid.toString();
+                    Cookie loginCookie = new Cookie("check", uid);
+                    loginCookie.setHttpOnly(false);
+                    loginCookie.setMaxAge(30*60*120);
+                    loginCookie.setDomain("localhost");
+
+                    response.addCookie(loginCookie);
+
+
+
 
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -179,8 +196,7 @@ public class UserOrderController {
             response.setStatus(400);
         }
         //PA
-        //return response;
-
+        //return loginCookie;
     }
 
 
@@ -259,6 +275,9 @@ public class UserOrderController {
         }
 
 
+        //Testar sessions
+
+
 
 
 
@@ -269,70 +288,80 @@ public class UserOrderController {
     @GetMapping("/orders")
     public ArrayList<ArrayList<Object[]>> getOrders(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("271");
-       // Object session = request.getSession().getAttribute("se");
-       // int userId1 = Integer.parseInt(session.toString());
+
         System.out.println("274");
         Database db = new Database();
         Connection conn = db.connectToDb();
 
-        int userId = 2;
-        System.out.println("Set userId: " + 26 + " on row 278");
-        System.out.println("278");
-        ArrayList<Object[]> results = new ArrayList<>();
-        String sqlQuery = "SELECT id FROM orders WHERE customer_id = ?";
-        try {
-            System.out.println("282");
-
-            PreparedStatement pst = conn.prepareStatement(sqlQuery);
-            pst.setInt(1, userId);
-            results = db.retrieveQuery(conn, pst);
-
-
-        } catch (SQLException e) {
-            System.out.println("290");
-
-            e.printStackTrace();
-        }
-
-        //Retrieves an array list of objects containing every order_id for customer.
-
-        String newId, id_from_orders, sqlQuery2;
-        ArrayList<Object[]> results2 = new ArrayList<>();
         ArrayList<ArrayList<Object[]>> finalResults = new ArrayList<>();
-        Connection conn2;
 
-        for (int i = 0; i < results.size(); i++) {
-            conn2 = db.connectToDb();
-            id_from_orders = Arrays.toString(results.get(i));
-            newId = id_from_orders.substring(1, id_from_orders.length()-1);
-            sqlQuery2 = "SELECT order_id, product_id, status FROM order_details WHERE order_id = ?";
+        HttpSession retrievedSession = request.getSession();
 
-            System.out.println("305");
+        Object sess = retrievedSession.getAttribute("Snus");
+        System.out.println(sess);
+
+        int userId = Integer.parseInt(sess.toString());
+
+        System.out.println("User id från Session");
+        System.out.println(userId);
+        if (userId > 0) {
+
+            ArrayList<Object[]> results = new ArrayList<>();
+            String sqlQuery = "SELECT id FROM orders WHERE customer_id = ?";
             try {
-                System.out.println("307");
-               PreparedStatement pst2 = conn2.prepareStatement(sqlQuery2);
-               pst2.setInt(1, Integer.parseInt(newId));
-                try {
-                    System.out.println("310");
-                    results2 = db.retrieveQuery(conn2, pst2);
-                    finalResults.add(results2);
-                    response.setStatus(200);
+                System.out.println("282");
 
-                } catch (Exception e) {
-                    System.out.println("317");
-                    e.printStackTrace();
-                }
+                PreparedStatement pst = conn.prepareStatement(sqlQuery);
+                pst.setInt(1, userId);
+                results = db.retrieveQuery(conn, pst);
+
 
             } catch (SQLException e) {
-                System.out.println("322");
+                System.out.println("290");
+
                 e.printStackTrace();
-                response.setStatus(400);
             }
 
+            //Retrieves an array list of objects containing every order_id for customer.
+
+            String newId, id_from_orders, sqlQuery2;
+            ArrayList<Object[]> results2 = new ArrayList<>();
+            Connection conn2;
+
+            for (int i = 0; i < results.size(); i++) {
+                conn2 = db.connectToDb();
+                id_from_orders = Arrays.toString(results.get(i));
+                newId = id_from_orders.substring(1, id_from_orders.length()-1);
+                sqlQuery2 = "SELECT order_id, product_id, status FROM order_details WHERE order_id = ?";
+
+                System.out.println("305");
+                try {
+                    System.out.println("307");
+                   PreparedStatement pst2 = conn2.prepareStatement(sqlQuery2);
+                   pst2.setInt(1, Integer.parseInt(newId));
+                    try {
+                        System.out.println("310");
+                        results2 = db.retrieveQuery(conn2, pst2);
+                        finalResults.add(results2);
+                        response.setStatus(200);
+
+                    } catch (Exception e) {
+                        System.out.println("317");
+                        e.printStackTrace();
+                    }
+
+                } catch (SQLException e) {
+                    System.out.println("322");
+                    e.printStackTrace();
+                    response.setStatus(400);
+                }
 
 
+
+            }
+        } else {
+            finalResults = null;
         }
-
         return finalResults;
     }
 
@@ -394,9 +423,13 @@ public class UserOrderController {
 
     @GetMapping("/logout")
     public void logout(HttpServletRequest request, HttpServletResponse response){
+        System.out.println("Logoutheheh");
         HttpSession session;
         session = request.getSession();
+
+        System.out.println(session.getAttribute("Snus").toString());
         session.invalidate();
+
         response.setStatus(200);
     }
 
