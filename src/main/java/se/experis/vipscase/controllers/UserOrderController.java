@@ -265,7 +265,7 @@ public class UserOrderController {
         return finalResults;
     }
 
-    //Lists all orders
+    //Lists all orders for user
     @GetMapping("/orders")
     public ArrayList<ArrayList<Object[]>> getOrders(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("271");
@@ -336,13 +336,14 @@ public class UserOrderController {
         return finalResults;
     }
 
-    //Lists all orders
+    //Lists order by id
     @GetMapping("/order/{order_id}")
     @ResponseBody
     public ArrayList<Object[]> getOrderById(HttpServletRequest request, HttpServletResponse response, @PathVariable String order_id) {
 
-        Object session = request.getSession().getAttribute("se");
-        int userId = Integer.parseInt(session.toString());
+        //Object session = request.getSession().getAttribute("se");
+        //int userId = Integer.parseInt(session.toString());
+        int userId = 1;
         Database db = new Database();
         Connection conn = db.connectToDb();
         String sqlQuery1 = "SELECT id FROM orders WHERE customer_id = ?";
