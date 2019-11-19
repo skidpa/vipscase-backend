@@ -3,7 +3,9 @@ package se.experis.vipscase.model;
 
 public class User {
 
-    User(){}
+    User(){
+        System.out.println("I user och skapar skit");
+    }
 
     private int id;
     private String name;
@@ -19,12 +21,14 @@ public class User {
     private String birthdate;
 
     public int getId() {
+        System.out.println("Fetching id: " + id + " from user");
 
         return id;
     }
 
     public void setId(int id) {
         this.id = id;
+        System.out.println("Sätter ID i user");
     }
 
     public String getName() {
@@ -44,6 +48,7 @@ public class User {
     }
 
     public String getEmail() {
+        System.out.println();
         return email;
     }
 
