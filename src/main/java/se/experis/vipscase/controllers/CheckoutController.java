@@ -14,6 +14,7 @@ import com.stripe.param.PaymentMethodRetrieveParams;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import se.experis.vipscase.Database;
 import se.experis.vipscase.model.StripePay;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,6 +23,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -120,6 +124,108 @@ public class CheckoutController {
         }
     }
 
+    @PostMapping("stripe/savedcustomer")
+    @ResponseBody
+    public String stripeSavedCardIntent(HttpServletResponse response, HttpServletRequest request, @RequestBody StripePay pay){
+        Stripe.apiKey = stripeKey;
+
+        //test for existing customer..
+        //first get the payment method from stripe.
+        PaymentMethodListParams listParams = new PaymentMethodListParams
+                .Builder()
+                //.setCustomer("cus_GBQkIuF2RLIpF2")
+                .setCustomer(pay.getStripeCustomer())
+                .setType(PaymentMethodListParams.Type.CARD)
+                .build();
+
+        PaymentMethodCollection paymentMethods = null;
+        try {
+            paymentMethods = PaymentMethod.list(listParams);
+        } catch (StripeException e) {
+            e.printStackTrace();
+        }
+
+        String paymentmethod = null;
+        try {
+            paymentmethod = paymentMethods
+                    .getRawJsonObject()
+                    .get("data")
+                    .getAsJsonArray()
+                    .get(0)
+                    .getAsJsonObject()
+                    .get("id")
+                    .toString();
+            paymentmethod = paymentmethod.substring(1, paymentmethod.length() -1);
+        } catch (Exception e) {
+            //e.printStackTrace();
+        }
+
+        System.out.println("Payment Method: " + paymentmethod);
+
+        PaymentIntentCreateParams createParams = null;
+
+        PaymentIntent intent = null;
+        try {
+            RequestOptions options = RequestOptions.builder()
+                    .setIdempotencyKey(pay.getIdempotencyThing())
+                    .build();
+
+            createParams = new PaymentIntentCreateParams.Builder()
+                    .setCurrency("sek")
+                    .setAmount(pay.getAmount())
+                    //.setCustomer("cus_GBQkIuF2RLIpF2") // hämtas från db beroende på usr id senare på nått sätt :S
+                    .setCustomer(pay.getStripeCustomer())
+                    .setPaymentMethod(paymentmethod)
+                    .setConfirm(true)
+                    .setOffSession(false)
+                    .build();
+            intent = PaymentIntent.create(createParams, options);
+
+            response.setStatus(200);
+            return intent.toJson();
+        } catch (StripeException e) {
+            System.out.println("Error code is : " + e.getCode() + "\n" +e.getMessage());
+            return null;
+        }
+
+
+        // this works for non customers
+        /*Map<String, Object> paymentIntentParams = new HashMap<String, Object>();
+        paymentIntentParams.put("amount", pay.getAmount());
+        paymentIntentParams.put("currency", "sek");
+        ArrayList payment_method_types = new ArrayList();
+        payment_method_types.add("card");
+        paymentIntentParams.put("payment_method_types", payment_method_types);
+        Map<String, String> initalMetadata = new HashMap<String, String>();
+        initalMetadata.put("save_card", Boolean.toString(pay.isSaveCard())); // Can place stuff in meta data whatever we want...
+        paymentIntentParams.put("metadata", initalMetadata);
+        PaymentIntent intent = null;
+
+        try {
+            // idempotency
+            RequestOptions options = RequestOptions.builder()
+                    .setIdempotencyKey(pay.getIdempotencyThing())
+                    .build();
+
+            intent = PaymentIntent.create(paymentIntentParams, options);
+            if(pay.isSaveCard()){
+                System.out.println("save the customer...");
+                Map<String, Object> customerParams = new HashMap<String,Object>();
+                System.out.println("setting payment method");
+                System.out.println("payment_method: " + intent);
+                customerParams.put("payment_method", intent.getPaymentMethod());
+                //Customer customer = Customer.create(customerParams);
+                //System.out.println("customer: " + customer);
+            }
+            response.setStatus(201);
+            return intent.toJson();
+        } catch (StripeException e){
+            e.printStackTrace();
+            response.setStatus(400);
+            return null;
+        }*/
+    }
+
     @PostMapping("stripe/intent")
     @ResponseBody
     public String stripeIntent(HttpServletResponse response, HttpServletRequest request, @RequestBody StripePay pay){
@@ -189,6 +295,7 @@ public class CheckoutController {
         paymentIntentParams.put("payment_method_types", payment_method_types);
         Map<String, String> initalMetadata = new HashMap<String, String>();
         initalMetadata.put("save_card", Boolean.toString(pay.isSaveCard())); // Can place stuff in meta data whatever we want...
+        initalMetadata.put("user_id", pay.getUserId());
         paymentIntentParams.put("metadata", initalMetadata);
         PaymentIntent intent = null;
 
@@ -203,7 +310,7 @@ public class CheckoutController {
                 System.out.println("save the customer...");
                 Map<String, Object> customerParams = new HashMap<String,Object>();
                 System.out.println("setting payment method");
-                System.out.println("payment_method: " + intent);
+                //System.out.println("payment_method: " + intent);
                 //customerParams.put("payment_method", intent.getPaymentMethod());
                 //Customer customer = Customer.create(customerParams);
                 //System.out.println("customer: " + customer);
@@ -294,6 +401,8 @@ public class CheckoutController {
 
                     System.out.println("meta value is true: " + intent.getMetadata().get("save_card").contains("true")
                     + "\n\n meta value: " + intent.getMetadata().get("save_card"));
+
+                    System.out.println("\n\nmeta userid:");
                     if(intent.getMetadata().get("save_card").equals("true")){
                         System.out.println("Saving Customer...");
                         Map<String, Object> customerParams = new HashMap<String, Object>();
@@ -304,10 +413,32 @@ public class CheckoutController {
                             System.out.println("Creating customer");
                             customer = Customer.create(customerParams);
                             System.out.println("customer created");
-                            System.out.println("customer: " + customer.toJson());
+                            //System.out.println("customer: " + customer.toJson());
                             System.out.println("\n now save something in our db :D \n");
                             //w probably want to save the customerid and the payment method..
-                            response.setStatus(201);
+                            Database db = new Database();
+                            Connection conn = db.connectToDb();
+                            String query = "UPDATE customers SET stripeid = ? WHERE id = ?";
+                            PreparedStatement pst = null;
+
+                            String customerStr = customer.getRawJsonObject()
+                                    .get("id")
+                                    .getAsString();
+
+                            try {
+                                System.out.println("\n -- customer to save: " + customerStr);
+                                pst = conn.prepareStatement(query);
+                                pst.setString(1, customerStr); // set the cus_ str from strip
+                                pst.setInt(2, Integer.parseInt(intent.getMetadata().get("user_id"))); // set the customer id from meta data?
+                                db.insertQuery(conn, pst);
+                                System.out.println("Metadata userid: " + intent.getMetadata().get("user_id"));
+
+                                response.setStatus(201);
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                                response.setStatus(400);
+                            }
+                            //response.setStatus(201);
                         } catch (StripeException e) {
                             e.printStackTrace();
                         }

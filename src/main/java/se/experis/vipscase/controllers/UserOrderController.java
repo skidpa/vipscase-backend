@@ -255,9 +255,16 @@ public class UserOrderController {
         int returnInt = 0;
         HttpSession retrievedSession = req.getSession();
         sess = retrievedSession.getAttribute("Snus");
+        //System.out.println("session stuff: " + sess.toString());
+        if (retrievedSession.getAttribute("Snus") == null){
+            System.out.println("new customer without login");
+            resp.setStatus(200);
+            return returnInt;
+        }
 
         if (sess != null) {
-            returnInt = 1;
+            //returnInt = 1;
+            returnInt = Integer.parseInt(sess.toString());
             System.out.println("Active session found");
 
         } else {
@@ -377,9 +384,10 @@ public class UserOrderController {
         ArrayList<Object[]> results = new ArrayList<>();
 
         HttpSession retrievedSession = request.getSession();
-
+        // if not logged in check for null value in session..
         if (retrievedSession.getAttribute("Snus") == null){
-            response.setStatus(400);
+            System.out.println("new customer without login");
+            response.setStatus(200);
             return resultString;
         }
 
@@ -401,11 +409,12 @@ public class UserOrderController {
                 System.out.println("HALLÅ");
                 resultString = Arrays.toString(results.get(0)).substring(1, Arrays.toString(results.get(0)).length()-1);
                 //System.out.println("resultString: " + resultString);
+                System.out.println("customer with saved card");
                 response.setStatus(200);
 
             } else {
                 System.out.println("HELLAAAA");
-                response.setStatus(400);
+                response.setStatus(200); // accepted because the user has not saved their card
             }
             System.out.println("Results: ");
             assert results != null;
