@@ -33,6 +33,17 @@ public class UserOrderController {
 
     }
 
+
+
+    /**
+     * Endpoint which handles the insertion of orders into the database. Returns 201 (Created) as success
+     * and 400 (Bad request) if errors occured.
+     * @param response, to send back status to Client
+     * @param order, to create an order and insert into the database
+     *
+     */
+
+
     @PostMapping("/order")
     @ResponseBody
     public void postOrder(HttpServletResponse response, @RequestBody Order order) {
@@ -78,6 +89,12 @@ public class UserOrderController {
         System.out.println("order: done");
     }
 
+    /**
+     * Endpoint which handles the insertion of customers into the database. Returns 201 (Created) as success
+     * and 400 (Bad request) if errors occured.
+     * @param response, to send back status to Client
+     * @param user, to create a user and insert into the database
+     */
     @PostMapping("/register/user")
     @ResponseBody
     public int registerUser(HttpServletResponse response,@RequestBody User user) {
@@ -108,13 +125,18 @@ public class UserOrderController {
             response.setStatus(400);
 
         }
-        //db.insertQuery(conn, user.getName(), user.getPassword(), user.getEmail(), user.getLastname(), user.getStreet(), user.getPostcode(), user.getCity(), user.getBirthdate());
-
         //Simon
         System.out.println("register user: done");
         return usrId;
-
     }
+
+
+    /**
+     * Endpoint which handles the insertion of products into the database. Returns 201 (Created) as success
+     * and 400 (Bad request) if errors occured.
+     * @param response, to send back status to Client
+     * @param product, to create a product and insert into the database
+     */
 
     @PostMapping("/addproduct")
     @ResponseBody
@@ -137,11 +159,23 @@ public class UserOrderController {
             e.printStackTrace();
             response.setStatus(400);
         }
-
-
     }
 
+
+    /**
+     * Endpoint which handles login for a user. Retrieves hashed password from database if email can be found
+     * and compares the stored hash with a new hash for a given password. If the hashes match, user ID is retrieved
+     * and a session is created, as well as a cookie containing that user's ID.
+     * TODO: Change the cookie to only contain boolean values for logged in / logged out.
+     *
+     * @param response, to send back status to Client
+     * @param request, to create a new session
+     * @param user, to create a customer object which calls getEmail() and getPassword()
+     */
+
+
     //@CrossOrigin(origins = "http://localhost:3000")
+
     @PostMapping("/login")
     @ResponseBody
     public void loginUser(HttpServletResponse response, HttpServletRequest request, @RequestBody User user) {
@@ -185,7 +219,6 @@ public class UserOrderController {
 
                 //Sessions
                 HttpSession sess = request.getSession();
-                //if (sess.isNew()) {
 
                     System.out.println("New session created for user with static ID: " + usrid);
                     System.out.println("Session ID: " + sess.getId());
@@ -197,13 +230,12 @@ public class UserOrderController {
                     loginCookie.setHttpOnly(false);
                     loginCookie.setMaxAge(30*60*120);
 
+
                     //loginCookie.setDomain("localhost");
                     //loginCookie.setDomain("pa-vips-back.herokuapp.com");
 
+
                     response.addCookie(loginCookie);
-
-
-
 
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -212,11 +244,33 @@ public class UserOrderController {
             System.out.println("Hacker be Gone!");
             response.setStatus(400);
         }
-        //PA
-        //return loginCookie;
     }
 
 
+
+    @GetMapping("/loggedin")
+    public int isLoggedIn(HttpServletRequest req, HttpServletResponse resp){
+        Object sess = null;
+        int returnInt = 0;
+        HttpSession retrievedSession = req.getSession();
+        sess = retrievedSession.getAttribute("Snus");
+
+        if (sess != null) {
+            returnInt = 1;
+            System.out.println("Active session found");
+
+        } else {
+            System.out.println("No session found, are you logged in?");
+        }
+
+        return returnInt;
+    }
+
+    /**
+     *  Endpoint which retrieves every product from the database.
+     * @param response, to send back status to Client
+     * @return ArrayList<Object[]>, ArrayList of produts
+     */
     //Returns every product from database
     @GetMapping("/products")
     public ArrayList<Object[]> getAllProduct(HttpServletResponse response) {
@@ -236,7 +290,11 @@ public class UserOrderController {
         return results;
     }
 
-
+    /**
+     * Endpoint which generates 4 random items from the products table in database.
+     * @param response, to send back status to Client
+     * @return ArrayList<Object>, ArrayList of products
+     */
     @GetMapping("/randomproducts")
     public ArrayList<ArrayList<Object[]>> getRandomProducts(HttpServletResponse response) {
         Database db = new Database();
@@ -301,6 +359,13 @@ public class UserOrderController {
         return finalResults;
     }
 
+
+    /**
+     * Endpoint which returns the stripeid for a given customer
+     * @param response, to send back status to Client
+     * @param request, to create a new session
+     * @return String, stripe ID as a string.
+     */
     @GetMapping("/stripe/customer")
     public String getStripeId(HttpServletRequest request, HttpServletResponse response) {
         System.out.println("In getStripeID");
@@ -349,6 +414,14 @@ public class UserOrderController {
 
     }
 
+
+    /**
+     * Endpoint which returns all orders for a given customer.
+     * Takes advantage of sessions to know which customer makes the request
+     * @param response, to send back status to Client
+     * @param request, to create a new session
+     * @return
+     */
     //Lists all orders for user
     @GetMapping("/orders")
     public ArrayList<ArrayList<Object[]>> getOrders(HttpServletRequest request, HttpServletResponse response) {
@@ -435,6 +508,14 @@ public class UserOrderController {
         return finalResults;
     }
 
+
+    /**
+     * Endpoint to return a single order by its ID
+     * @param response, to send back status to Client
+     * @param request, to create a new session
+     * @param order_id TODO: Use this, not the userId assigned within the function
+     * @return ArrayList<Object[]>, ArrayList of order
+     */
     //Lists order by id
     @GetMapping("/order/{order_id}")
     @ResponseBody
@@ -491,6 +572,11 @@ public class UserOrderController {
         return results2;
     }
 
+    /**
+     * Endpoint which invalidates the current session
+     * @param response, to send back status to Client
+     * @param request, to create a new session
+     */
     @GetMapping("/logout")
     public void logout(HttpServletRequest request, HttpServletResponse response){
         System.out.println("Logoutheheh");
