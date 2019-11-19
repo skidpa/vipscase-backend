@@ -17,6 +17,7 @@ public class StripePay {
     private String token_id;
     private boolean saveCard = false;
     private String stripeCustomer;
+    private String userId;
 
 
     public StripePay() {
@@ -32,6 +33,14 @@ public class StripePay {
 
     // nya
 
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
 
     public String getStripeCustomer() {
         return stripeCustomer;
