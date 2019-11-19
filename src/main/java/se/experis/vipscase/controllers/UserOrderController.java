@@ -114,11 +114,12 @@ public class UserOrderController {
             response.setStatus(400);
 
         }
-    }
-
         //Simon
         System.out.println("register user: done");
         return usrId;
+    }
+
+
     /**
      * Endpoint which handles the insertion of products into the database. Returns 201 (Created) as success
      * and 400 (Bad request) if errors occured.
