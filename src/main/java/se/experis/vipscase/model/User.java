@@ -19,6 +19,7 @@ public class User {
     private int postcode;
     private String city;
     private String birthdate;
+    private String stripeid;
 
     public int getId() {
         System.out.println("Fetching id: " + id + " from user");
@@ -94,6 +95,13 @@ public class User {
 
     public void setBirthdate(String birthdate) {
         this.birthdate = birthdate;
+    }
+    public String getStripeid() {
+        return stripeid;
+    }
+
+    public void setStripeid(String stripeid) {
+        this.stripeid = stripeid;
     }
 
 
