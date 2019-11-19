@@ -29,6 +29,9 @@ public class UserOrderController {
     @PostMapping("/order")
     @ResponseBody
     public void postOrder(HttpServletResponse response, @RequestBody Order order) {
+        System.out.println("order: start");
+
+        System.out.println(order.toString());
         Database db = new Database();
         Connection conn = db.connectToDb();
         //TODO: add atomic operations?
@@ -65,11 +68,13 @@ public class UserOrderController {
             e.printStackTrace();
             response.setStatus(400);
         }
+        System.out.println("order: done");
     }
 
     @PostMapping("/register/user")
     @ResponseBody
-    public void registerUser(HttpServletResponse response,@RequestBody User user) {
+    public int registerUser(HttpServletResponse response,@RequestBody User user) {
+        System.out.println("register user: start");
         Database db = new Database();
         Connection conn = db.connectToDb();
         String cpass = db.hashStuff(user.getPassword());
@@ -77,9 +82,9 @@ public class UserOrderController {
         String insertQ = "INSERT INTO " +
                 "customers (customername, customerpass, email, lastname, streetname, postcode, city, birthyear) " +
                 "VALUES (?,?,?,?,?,?,?,?)";
-
+        int usrId = 0;
         try {
-            PreparedStatement pst = conn.prepareStatement(insertQ);
+            PreparedStatement pst = conn.prepareStatement(insertQ, Statement.RETURN_GENERATED_KEYS);
             pst.setString(1, user.getName());
             pst.setString(2, cpass);
             pst.setString(3, user.getEmail());
@@ -88,15 +93,19 @@ public class UserOrderController {
             pst.setInt(6, user.getPostcode()); //?
             pst.setString(7, user.getCity());
             pst.setString(8, user.getBirthdate());
-            db.insertQuery(conn, pst);
+            usrId = db.insertQuery(conn, pst);
             response.setStatus(201);
+
         } catch (SQLException e) {
             e.printStackTrace();
             response.setStatus(400);
+
         }
         //db.insertQuery(conn, user.getName(), user.getPassword(), user.getEmail(), user.getLastname(), user.getStreet(), user.getPostcode(), user.getCity(), user.getBirthdate());
 
         //Simon
+        System.out.println("register user: done");
+        return usrId;
 
     }
 
@@ -213,7 +222,7 @@ public class UserOrderController {
         String countQuery = "SELECT id FROM products GROUP BY id";
         String id_from_orders, newId;
         ArrayList<ArrayList<Object[]>> finalResults = new ArrayList<>();
-        String finalQuery = "SELECT productname, productdescription, instock, price FROM products WHERE id = ?";
+        String finalQuery = "SELECT id, productname, productdescription, instock, price FROM products WHERE id = ?";
         PreparedStatement pst = null;
         int randInt = 0;
         try {
@@ -222,17 +231,17 @@ public class UserOrderController {
             //id_from_orders = Arrays.toString(nrOfRows.get(0));
 
             for (int i = 0; i < 4; i++) {
-                System.out.println("Run: " + i);
-                System.out.println("1");
+                //System.out.println("Run: " + i);
+                //System.out.println("1");
                 conn = db.connectToDb();
-                System.out.println("2");
+                //System.out.println("2");
                 Random r = new Random();
-                System.out.println("3");
+                //System.out.println("3");
 
                 try {
                     randInt = r.nextInt(nrOfRows.size() - 1) + 1;
-                    System.out.println("Rand: ");
-                    System.out.println(randInt);
+                    //System.out.println("Rand: ");
+                    //System.out.println(randInt);
                     id_from_orders = Arrays.toString(nrOfRows.get(randInt));
                     newId = id_from_orders.substring(1, id_from_orders.length() - 1);
                     results.add(newId);
@@ -240,12 +249,12 @@ public class UserOrderController {
                     pst = conn.prepareStatement(finalQuery);
                     pst.setInt(1, Integer.parseInt(results.get(i)));
 
-                    System.out.println(pst);
+                    //System.out.println(pst);
 
                     finalResults.add(db.retrieveQuery(conn, pst));
 
                 } catch (SQLException e) {
-                    System.out.println("Inner");
+                    //System.out.println("Inner");
                     e.printStackTrace();
                 }
                 response.setStatus(200);
@@ -253,7 +262,7 @@ public class UserOrderController {
             }
 
         } catch (SQLException e) {
-            System.out.println("yalla");
+            //System.out.println("yalla");
             e.printStackTrace();
             response.setStatus(400);
         }
@@ -268,20 +277,20 @@ public class UserOrderController {
     //Lists all orders for user
     @GetMapping("/orders")
     public ArrayList<ArrayList<Object[]>> getOrders(HttpServletRequest request, HttpServletResponse response) {
-        System.out.println("271");
+        //System.out.println("271");
        // Object session = request.getSession().getAttribute("se");
        // int userId1 = Integer.parseInt(session.toString());
-        System.out.println("274");
+        //System.out.println("274");
         Database db = new Database();
         Connection conn = db.connectToDb();
 
         int userId = 2;
-        System.out.println("Set userId: " + 26 + " on row 278");
-        System.out.println("278");
+        //System.out.println("Set userId: " + 26 + " on row 278");
+        //System.out.println("278");
         ArrayList<Object[]> results = new ArrayList<>();
         String sqlQuery = "SELECT id FROM orders WHERE customer_id = ?";
         try {
-            System.out.println("282");
+            //System.out.println("282");
 
             PreparedStatement pst = conn.prepareStatement(sqlQuery);
             pst.setInt(1, userId);
@@ -289,7 +298,7 @@ public class UserOrderController {
 
 
         } catch (SQLException e) {
-            System.out.println("290");
+            //System.out.println("290");
 
             e.printStackTrace();
         }
@@ -307,24 +316,24 @@ public class UserOrderController {
             newId = id_from_orders.substring(1, id_from_orders.length()-1);
             sqlQuery2 = "SELECT order_id, product_id, status FROM order_details WHERE order_id = ?";
 
-            System.out.println("305");
+            //System.out.println("305");
             try {
-                System.out.println("307");
+                //System.out.println("307");
                PreparedStatement pst2 = conn2.prepareStatement(sqlQuery2);
                pst2.setInt(1, Integer.parseInt(newId));
                 try {
-                    System.out.println("310");
+                    //System.out.println("310");
                     results2 = db.retrieveQuery(conn2, pst2);
                     finalResults.add(results2);
                     response.setStatus(200);
 
                 } catch (Exception e) {
-                    System.out.println("317");
+                    //System.out.println("317");
                     e.printStackTrace();
                 }
 
             } catch (SQLException e) {
-                System.out.println("322");
+                //System.out.println("322");
                 e.printStackTrace();
                 response.setStatus(400);
             }
