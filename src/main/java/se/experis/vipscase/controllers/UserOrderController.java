@@ -319,6 +319,8 @@ public class UserOrderController {
             }
             if (Arrays.toString(results.get(0)).contains("cus")){
                 System.out.println("HALLÅ");
+                resultString = Arrays.toString(results.get(0)).substring(1, Arrays.toString(results.get(0)).length()-1);
+                //System.out.println("resultString: " + resultString);
                 response.setStatus(200);
 
             } else {
