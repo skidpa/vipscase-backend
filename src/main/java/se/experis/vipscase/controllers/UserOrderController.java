@@ -197,8 +197,9 @@ public class UserOrderController {
                     Cookie loginCookie = new Cookie("check", uid);
                     loginCookie.setHttpOnly(false);
                     loginCookie.setMaxAge(30*60*120);
+
                     //loginCookie.setDomain("localhost");
-                    loginCookie.setDomain("pa-vips-front.herokuapp.com");
+                    //loginCookie.setDomain("pa-vips-front.herokuapp.com");
 
                     response.addCookie(loginCookie);
 
