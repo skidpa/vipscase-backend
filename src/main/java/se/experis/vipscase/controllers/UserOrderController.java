@@ -21,7 +21,8 @@ import java.util.*;
         allowedHeaders = "*",
         origins = {
                 "http://localhost:3000",
-                "https://pa-vips-front.herokuapp.com"
+                "https://pa-vips-front.herokuapp.com",
+                "http://pa-vips-front.herokuapp.com"
         },
         maxAge = 3600
 )
