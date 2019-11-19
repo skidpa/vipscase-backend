@@ -421,16 +421,6 @@ public class CheckoutController {
                             String query = "UPDATE customers SET stripeid = ? WHERE id = ?";
                             PreparedStatement pst = null;
 
-                            /*paymentmethod = paymentMethods
-                                    .getRawJsonObject()
-                                    .get("data")
-                                    .getAsJsonArray()
-                                    .get(0)
-                                    .getAsJsonObject()
-                                    .get("id")
-                                    .toString();
-                            paymentmethod = paymentmethod.substring(1, paymentmethod.length() -1);*/
-
                             String customerStr = customer.getRawJsonObject()
                                     .get("id")
                                     .getAsString();
@@ -438,9 +428,9 @@ public class CheckoutController {
                             try {
                                 System.out.println("\n -- customer to save: " + customerStr);
                                 pst = conn.prepareStatement(query);
-                                //pst.setString(1, "customer"); // set the cus_ str from strip
-                                //pst.setInt(2, Integer.parseInt(intent.getMetadata().get(1))); // set the customer id from meta data?
-                                //db.insertQuery(conn, pst);
+                                pst.setString(1, customerStr); // set the cus_ str from strip
+                                pst.setInt(2, Integer.parseInt(intent.getMetadata().get("user_id"))); // set the customer id from meta data?
+                                db.insertQuery(conn, pst);
                                 System.out.println("Metadata userid: " + intent.getMetadata().get("user_id"));
 
                                 response.setStatus(201);
