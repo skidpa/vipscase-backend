@@ -16,13 +16,23 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
-@CrossOrigin(allowCredentials = "true", origins = {"http://localhost:3000", "https://pa-vips-front.herokuapp.com/checkout"}, maxAge = 3600)
+@CrossOrigin(
+        allowCredentials = "true",
+        allowedHeaders = "*",
+        origins = {
+                "http://localhost:3000",
+                "https://pa-vips-front.herokuapp.com",
+                "http://pa-vips-front.herokuapp.com"
+        },
+        maxAge = 3600
+)
 //@CrossOrigin(maxAge = 3600)
 @RestController
 public class UserOrderController {
     UserOrderController(){
 
     }
+
 
 
     /**
@@ -32,6 +42,7 @@ public class UserOrderController {
      * @param order, to create an order and insert into the database
      *
      */
+
 
     @PostMapping("/order")
     @ResponseBody
@@ -150,6 +161,7 @@ public class UserOrderController {
         }
     }
 
+
     /**
      * Endpoint which handles login for a user. Retrieves hashed password from database if email can be found
      * and compares the stored hash with a new hash for a given password. If the hashes match, user ID is retrieved
@@ -161,7 +173,9 @@ public class UserOrderController {
      * @param user, to create a customer object which calls getEmail() and getPassword()
      */
 
-    @CrossOrigin(origins = "http://localhost:3000")
+
+    //@CrossOrigin(origins = "http://localhost:3000")
+
     @PostMapping("/login")
     @ResponseBody
     public void loginUser(HttpServletResponse response, HttpServletRequest request, @RequestBody User user) {
@@ -215,7 +229,12 @@ public class UserOrderController {
                     Cookie loginCookie = new Cookie("check", uid);
                     loginCookie.setHttpOnly(false);
                     loginCookie.setMaxAge(30*60*120);
-                    loginCookie.setDomain("localhost");
+
+
+                    //loginCookie.setDomain("localhost");
+                    //loginCookie.setDomain("pa-vips-back.herokuapp.com");
+
+
                     response.addCookie(loginCookie);
                     response.setStatus(200);
 
@@ -358,8 +377,14 @@ public class UserOrderController {
         ArrayList<Object[]> results = new ArrayList<>();
 
         HttpSession retrievedSession = request.getSession();
-        Object sess = retrievedSession.getAttribute("Snus");
 
+        if (retrievedSession.getAttribute("Snus") == null){
+            response.setStatus(400);
+            return resultString;
+        }
+
+        Object sess = retrievedSession.getAttribute("Snus");
+        System.out.println(sess.toString());
         int userId = Integer.parseInt(sess.toString());
         if (userId > 0){
             String sqlQuery = "SELECT stripeid FROM customers WHERE id = ?";
