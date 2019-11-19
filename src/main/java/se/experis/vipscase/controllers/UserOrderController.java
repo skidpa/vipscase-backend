@@ -255,7 +255,12 @@ public class UserOrderController {
         int returnInt = 0;
         HttpSession retrievedSession = req.getSession();
         sess = retrievedSession.getAttribute("Snus");
-        System.out.println("session stuff: " + sess.toString());
+        //System.out.println("session stuff: " + sess.toString());
+        if (retrievedSession.getAttribute("Snus") == null){
+            System.out.println("new customer without login");
+            resp.setStatus(200);
+            return returnInt;
+        }
 
         if (sess != null) {
             //returnInt = 1;

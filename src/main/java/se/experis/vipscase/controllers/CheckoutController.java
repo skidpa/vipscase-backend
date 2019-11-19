@@ -401,6 +401,8 @@ public class CheckoutController {
 
                     System.out.println("meta value is true: " + intent.getMetadata().get("save_card").contains("true")
                     + "\n\n meta value: " + intent.getMetadata().get("save_card"));
+
+                    System.out.println("\n\nmeta userid:");
                     if(intent.getMetadata().get("save_card").equals("true")){
                         System.out.println("Saving Customer...");
                         Map<String, Object> customerParams = new HashMap<String, Object>();
@@ -418,12 +420,28 @@ public class CheckoutController {
                             Connection conn = db.connectToDb();
                             String query = "UPDATE customers SET stripeid = ? WHERE id = ?";
                             PreparedStatement pst = null;
+
+                            /*paymentmethod = paymentMethods
+                                    .getRawJsonObject()
+                                    .get("data")
+                                    .getAsJsonArray()
+                                    .get(0)
+                                    .getAsJsonObject()
+                                    .get("id")
+                                    .toString();
+                            paymentmethod = paymentmethod.substring(1, paymentmethod.length() -1);*/
+
+                            String customerStr = customer.getRawJsonObject()
+                                    .get("id")
+                                    .getAsString();
+
                             try {
+                                System.out.println("\n -- customer to save: " + customerStr);
                                 pst = conn.prepareStatement(query);
                                 //pst.setString(1, "customer"); // set the cus_ str from strip
                                 //pst.setInt(2, Integer.parseInt(intent.getMetadata().get(1))); // set the customer id from meta data?
                                 //db.insertQuery(conn, pst);
-                                System.out.println("Metadata userid: " + intent.getMetadata().get(1));
+                                System.out.println("Metadata userid: " + intent.getMetadata().get("user_id"));
 
                                 response.setStatus(201);
                             } catch (SQLException e) {
