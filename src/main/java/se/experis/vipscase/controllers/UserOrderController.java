@@ -293,6 +293,52 @@ public class UserOrderController {
         return finalResults;
     }
 
+    @GetMapping("/stripe/customer")
+    public String getStripeId(HttpServletRequest request, HttpServletResponse response) {
+        System.out.println("In getStripeID");
+
+        Database db = new Database();
+        Connection conn = db.connectToDb();
+        String resultString = "";
+        ArrayList<Object[]> results = new ArrayList<>();
+
+        HttpSession retrievedSession = request.getSession();
+        Object sess = retrievedSession.getAttribute("Snus");
+
+        int userId = Integer.parseInt(sess.toString());
+        if (userId > 0){
+            String sqlQuery = "SELECT stripeid FROM customers WHERE id = ?";
+
+            try {
+                PreparedStatement pst = conn.prepareStatement(sqlQuery);
+                pst.setInt(1, userId);
+                results = db.retrieveQuery(conn, pst);
+
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+            if (Arrays.toString(results.get(0)).contains("cus")){
+                System.out.println("HALLÅ");
+                response.setStatus(200);
+
+            } else {
+                System.out.println("HELLAAAA");
+                response.setStatus(400);
+            }
+            System.out.println("Results: ");
+            assert results != null;
+            System.out.println(Arrays.toString(results.get(0)));
+            System.out.println("Resultstring");
+            System.out.println(resultString);
+        } else {
+            System.out.println("UserID < 0");
+        }
+
+
+        return resultString;
+
+    }
+
     //Lists all orders for user
     @GetMapping("/orders")
     public ArrayList<ArrayList<Object[]>> getOrders(HttpServletRequest request, HttpServletResponse response) {
