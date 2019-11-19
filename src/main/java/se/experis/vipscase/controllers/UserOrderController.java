@@ -18,6 +18,7 @@ import java.util.*;
 
 @CrossOrigin(
         allowCredentials = "true",
+        allowedHeaders = "*",
         origins = {
                 "http://localhost:3000",
                 "https://pa-vips-front.herokuapp.com"

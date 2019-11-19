@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Map;
 
 @CrossOrigin(
+        allowCredentials = "true",
+        allowedHeaders = "*",
         origins = {
                 "http://localhost:3000",
                 "https://pa-vips-front.herokuapp.com"
