@@ -310,7 +310,7 @@ public class CheckoutController {
                 System.out.println("save the customer...");
                 Map<String, Object> customerParams = new HashMap<String,Object>();
                 System.out.println("setting payment method");
-                System.out.println("payment_method: " + intent);
+                //System.out.println("payment_method: " + intent);
                 //customerParams.put("payment_method", intent.getPaymentMethod());
                 //Customer customer = Customer.create(customerParams);
                 //System.out.println("customer: " + customer);
@@ -413,7 +413,7 @@ public class CheckoutController {
                             System.out.println("Creating customer");
                             customer = Customer.create(customerParams);
                             System.out.println("customer created");
-                            System.out.println("customer: " + customer.toJson());
+                            //System.out.println("customer: " + customer.toJson());
                             System.out.println("\n now save something in our db :D \n");
                             //w probably want to save the customerid and the payment method..
                             Database db = new Database();
