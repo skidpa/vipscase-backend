@@ -33,9 +33,6 @@ public class UserOrderController {
 
     }
 
-
-
-
     @PostMapping("/order")
     @ResponseBody
     public void postOrder(HttpServletResponse response, @RequestBody Order order) {
@@ -201,7 +198,7 @@ public class UserOrderController {
                     loginCookie.setMaxAge(30*60*120);
 
                     //loginCookie.setDomain("localhost");
-                    //loginCookie.setDomain("pa-vips-front.herokuapp.com");
+                    //loginCookie.setDomain("pa-vips-back.herokuapp.com");
 
                     response.addCookie(loginCookie);
 
