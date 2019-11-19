@@ -217,6 +217,7 @@ public class UserOrderController {
                     loginCookie.setMaxAge(30*60*120);
                     loginCookie.setDomain("localhost");
                     response.addCookie(loginCookie);
+                    response.setStatus(200);
 
             } catch (SQLException e) {
                 e.printStackTrace();
