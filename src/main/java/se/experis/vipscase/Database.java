@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class Database {
-    private boolean live = true;
+    private boolean live = false;
 
     public Database(){
 
@@ -41,7 +41,7 @@ public class Database {
         boolean isResult = false;
         boolean gotResult = false;
         try {
-            System.out.println();
+            //System.out.println();
             isResult = pst.execute();
 
         } catch (Exception e) {
@@ -100,16 +100,23 @@ public class Database {
      *  @param conn, The connection provided from connectToDb()
      * @param pst, The prepared statement from postOrder()
      */
-    public void insertQuery(Connection conn, PreparedStatement pst) {
-
+    public int insertQuery(Connection conn, PreparedStatement pst) {
+        int usrId = 0;
 
         try {
             pst.execute();
-            closeConnect(conn);
+            ResultSet getUsrId = pst.getGeneratedKeys();
+            if (getUsrId.next()) {
+                //System.out.println("---------------the newly inserted id: " + getUsrId.getInt(1));
+                usrId = getUsrId.getInt(1);
+            }
 
+
+            closeConnect(conn);
             } catch (SQLException e) {
             e.printStackTrace();
         }
+        return usrId;
     }
 
     public int addOrder(Connection conn, PreparedStatement pst) {
@@ -122,7 +129,7 @@ public class Database {
 
             ResultSet getId = pst.getGeneratedKeys();
             if(getId.next()){
-                System.out.println("the newly inserted id: " + getId.getInt(1));
+                //System.out.println("the newly inserted id: " + getId.getInt(1));
                 order_id = getId.getInt(1);
             }
 
