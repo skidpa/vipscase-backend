@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.concurrent.TimeUnit;
 
 public class Database {
-    private boolean live = false;
+    private boolean live = true;
 
     public Database(){
 
