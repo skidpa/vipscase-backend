@@ -27,7 +27,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = {"http://localhost:3000", "https://pa-vips-front.herokuapp.com"}, maxAge = 3600)
+@CrossOrigin(
+        allowCredentials = "true",
+        allowedHeaders = "*",
+        origins = {
+                "http://localhost:3000",
+                "https://pa-vips-front.herokuapp.com"
+        },
+        maxAge = 3600
+)
 //@CrossOrigin(origins = {"*"}, maxAge = 3600)
 @RestController
 public class CheckoutController {
