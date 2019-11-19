@@ -236,6 +236,7 @@ public class UserOrderController {
 
 
                     response.addCookie(loginCookie);
+                    response.setStatus(200);
 
             } catch (SQLException e) {
                 e.printStackTrace();
