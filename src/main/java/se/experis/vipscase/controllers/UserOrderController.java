@@ -377,8 +377,14 @@ public class UserOrderController {
         ArrayList<Object[]> results = new ArrayList<>();
 
         HttpSession retrievedSession = request.getSession();
-        Object sess = retrievedSession.getAttribute("Snus");
 
+        if (retrievedSession.getAttribute("Snus") == null){
+            response.setStatus(400);
+            return resultString;
+        }
+
+        Object sess = retrievedSession.getAttribute("Snus");
+        System.out.println(sess.toString());
         int userId = Integer.parseInt(sess.toString());
         if (userId > 0){
             String sqlQuery = "SELECT stripeid FROM customers WHERE id = ?";
