@@ -233,10 +233,10 @@ public class CheckoutController {
             case "payment_intent.succeeded":
                 System.out.println("payment_intent.succeeded!!");
                 PaymentIntent intent = (PaymentIntent) stripeObject;
-                System.out.println("testing to get billing details");
+                //System.out.println("testing to get billing details");
                 // get the url for the reciept
                 String receiptUrl = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getReceiptUrl();
-                System.out.println("---- receiptUrl: " + receiptUrl);
+                //System.out.println("---- receiptUrl: " + receiptUrl);
 
                 String city = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getAddress().getCity();
                 String country = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getAddress().getCountry();
@@ -248,57 +248,25 @@ public class CheckoutController {
                 String phone = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getPhone();
                 Address test = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getAddress();
                 //System.out.println("address: " + address);
-                System.out.printf("city: %s\ncountry: %s\nstate: %s\nzipCode: %s\nname: %s\nemail: %s\nphone: %s\n", city, country, state, zipCode, customerName, email, phone);
-                System.out.println("street:" +  street);
+                //System.out.printf("city: %s\ncountry: %s\nstate: %s\nzipCode: %s\nname: %s\nemail: %s\nphone: %s\n", city, country, state, zipCode, customerName, email, phone);
+                //System.out.println("street:" +  street);
 
 
                 //System.out.println("---- Stuff email: " + city);
 
-                Customer customer = null;
-                Map<String, Object> customerParams = new HashMap<String, Object>();
-                customerParams.put("payment_method", intent.getPaymentMethod());
-                customerParams.put("email", email);
-                customerParams.put("name", customerName);
-                customerParams.put("phone", phone);
-                customerParams.put("description", "VipsCase web customer");
 
-                Map<String, Object> billingParams = new HashMap<String, Object>();
-                billingParams.put("city", city);
-                billingParams.put("country", country);
-                billingParams.put("line1", street);
-                billingParams.put("postal_code", zipCode);
-                billingParams.put("state", state);
-                customerParams.put("address", billingParams);
-
+                /*
                 try {
                     customer = Customer.create(customerParams);
                     System.out.println("customer: \n" + customer.toJson());
                 } catch (StripeException e) {
                     e.printStackTrace();
-                }
+                }*/
 
-                response.setStatus(200);
 
-                // test
-                /*paymentmethod = paymentMethods
-                        .getRawJsonObject()
-                        .get("data")
-                        .getAsJsonArray()
-                        .get(0)
-                        .getAsJsonObject()
-                        .get("id")
-                        .toString();
-                paymentmethod = paymentmethod.substring(1, paymentmethod.length() -1);*/
-                //System.out.println("ready to print payment intent");
-                //System.out.println("payment intent : " + intent.toJson());
-                //System.out.println("setting payment intent to string");
-                //System.out.println("testing to get intent name: " + intent.getPaymentMethodObject().getCustomer());
-                //String test = intent.toJson();
 
-                //System.out.println("\n\n intent json obj: \n----------------------\n" + test + "\n-----------------------\n\n");
 
-                // test done
-                /*try {
+                try {
                     //System.out.println("\n\nmeta contains Save card: " + intent.getMetadata().containsKey("save_card")
                      //+ "\n\n meta contains key value true: " + intent.getMetadata().containsValue("true") + "\n\n");
 
@@ -311,6 +279,21 @@ public class CheckoutController {
                         // Set the customer parameters using the body we got from stripe
                         Map<String, Object> customerParams = new HashMap<String, Object>();
                         customerParams.put("payment_method", intent.getPaymentMethod());
+                        //Map<String, Object> customerParams = new HashMap<String, Object>();
+                        //customerParams.put("payment_method", intent.getPaymentMethod());
+                        customerParams.put("email", email);
+                        customerParams.put("name", customerName);
+                        customerParams.put("phone", phone);
+                        customerParams.put("description", "VipsCase web customer");
+
+                        Map<String, Object> billingParams = new HashMap<String, Object>();
+                        billingParams.put("city", city);
+                        billingParams.put("country", country);
+                        billingParams.put("line1", street);
+                        billingParams.put("postal_code", zipCode);
+                        billingParams.put("state", state);
+                        customerParams.put("address", billingParams);
+
                         //here we can probably do something like put "mail", the email located in the payment method
                         // we might be able to set Account information details aswell from the payment method stuff
                         Customer customer = null;
@@ -354,6 +337,7 @@ public class CheckoutController {
                             }
                         } catch (StripeException e) {
                             System.out.println("---- ERROR TRYING TO CREATE CUSTOMER");
+                            response.setStatus(400);
                             System.out.println(e.getMessage());
                             //e.printStackTrace();
                         }
@@ -362,7 +346,7 @@ public class CheckoutController {
                     System.out.println("------ ERRRO BIG TRY");
                     System.out.println(e.getMessage());
                     //e.printStackTrace();
-                }*/
+                }
                 break;
             default:
                 response.setStatus(203); //400
