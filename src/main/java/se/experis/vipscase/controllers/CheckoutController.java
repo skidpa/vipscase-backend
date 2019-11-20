@@ -285,6 +285,7 @@ public class CheckoutController {
                             String customerStr = customer.getRawJsonObject()
                                     .get("id")
                                     .getAsString();
+                            //sdasd
 
                             try {
                                 //System.out.println("\n -- customer to save: " + customerStr);
