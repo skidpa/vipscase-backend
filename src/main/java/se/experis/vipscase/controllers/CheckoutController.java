@@ -245,7 +245,7 @@ public class CheckoutController {
                 paymentmethod = paymentmethod.substring(1, paymentmethod.length() -1);*/
 
                 System.out.println("payment intent : " + intent.toJson());
-                String test = intent.getRawJsonObject().toString();
+                String test = intent.toJson();
 
                 System.out.println("\n\n intent json obj: \n----------------------\n" + test + "\n-----------------------\n\n");
 
