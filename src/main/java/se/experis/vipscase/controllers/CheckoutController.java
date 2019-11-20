@@ -233,6 +233,23 @@ public class CheckoutController {
             case "payment_intent.succeeded":
                 //System.out.println("payment_intent.succeeded!!");
                 PaymentIntent intent = (PaymentIntent) stripeObject;
+                // test
+                /*paymentmethod = paymentMethods
+                        .getRawJsonObject()
+                        .get("data")
+                        .getAsJsonArray()
+                        .get(0)
+                        .getAsJsonObject()
+                        .get("id")
+                        .toString();
+                paymentmethod = paymentmethod.substring(1, paymentmethod.length() -1);*/
+
+                System.out.println("payment intent : " + intent.toJson());
+                String test = intent.getRawJsonObject().toString();
+
+                System.out.println("\n\n intent json obj: \n----------------------\n" + test + "\n-----------------------\n\n");
+
+                // test done
                 try {
                     /*System.out.println("\n\nmeta contains Save card: " + intent.getMetadata().containsKey("save_card")
                      + "\n\n meta contains key value true: " + intent.getMetadata().containsValue("true") + "\n\n");
