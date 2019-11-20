@@ -234,8 +234,9 @@ public class CheckoutController {
                 System.out.println("payment_intent.succeeded!!");
                 PaymentIntent intent = (PaymentIntent) stripeObject;
                 System.out.println("testing to get billing details");
-                String stuff = stripeObject.getRawJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("billing_details").getAsJsonArray().getAsJsonObject().get("email").toString();
-                System.out.println("---- Stuff email: " + stuff);
+                //String stuff = stripeObject.getRawJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("billing_details").getAsJsonArray().getAsJsonObject().get("email").toString();
+                //System.out.println("---- Stuff email: " + stuff);
+                response.setStatus(200);
 
                 // test
                 /*paymentmethod = paymentMethods
@@ -256,7 +257,7 @@ public class CheckoutController {
                 //System.out.println("\n\n intent json obj: \n----------------------\n" + test + "\n-----------------------\n\n");
 
                 // test done
-                try {
+                /*try {
                     //System.out.println("\n\nmeta contains Save card: " + intent.getMetadata().containsKey("save_card")
                      //+ "\n\n meta contains key value true: " + intent.getMetadata().containsValue("true") + "\n\n");
 
@@ -320,10 +321,10 @@ public class CheckoutController {
                     System.out.println("------ ERRRO BIG TRY");
                     System.out.println(e.getMessage());
                     //e.printStackTrace();
-                }
+                }*/
                 break;
             default:
-                response.setStatus(400);
+                response.setStatus(203); //400
                 return "";
         }
 
