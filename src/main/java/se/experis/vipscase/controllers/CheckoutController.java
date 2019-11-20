@@ -234,8 +234,39 @@ public class CheckoutController {
                 System.out.println("payment_intent.succeeded!!");
                 PaymentIntent intent = (PaymentIntent) stripeObject;
                 System.out.println("testing to get billing details");
-                //String stuff = stripeObject.getRawJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("billing_details").getAsJsonArray().getAsJsonObject().get("email").toString();
-                //System.out.println("---- Stuff email: " + stuff);
+                // get the url for the reciept
+                String receiptUrl = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getReceiptUrl();
+                System.out.println("---- receiptUrl: " + receiptUrl);
+
+                String city = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getAddress().getCity();
+                String country = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getAddress().getCountry();
+                String state = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getAddress().getState();
+                String zipCode = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getAddress().getPostalCode();
+                String street = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getAddress().getLine1();
+                String customerName = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getName();
+                String email = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getEmail();
+                String phone = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getPhone();
+                //System.out.println("address: " + address);
+                System.out.printf("city: %s\ncountry: %s\nstate: %s\nzipCode: %s\nname: %s\nemail: %s\nphone: %s\n", city, country, state, zipCode, customerName, email, phone);
+                System.out.println("street:" +  street);
+
+
+                //System.out.println("---- Stuff email: " + city);
+
+                Customer customer = null;
+                Map<String, Object> customerParams = new HashMap<String, Object>();
+                customerParams.put("payment_method", intent.getPaymentMethod());
+                customerParams.put("email", email);
+                customerParams.put("name", customerName);
+                customerParams.put("phone", phone);
+                customerParams.put("description", "VipsCase web customer");
+                try {
+                    customer = Customer.create(customerParams);
+                    System.out.println("customer: \n" + customer.toJson());
+                } catch (StripeException e) {
+                    e.printStackTrace();
+                }
+
                 response.setStatus(200);
 
                 // test
