@@ -233,6 +233,10 @@ public class CheckoutController {
             case "payment_intent.succeeded":
                 System.out.println("payment_intent.succeeded!!");
                 PaymentIntent intent = (PaymentIntent) stripeObject;
+                System.out.println("testing to get billing details");
+                String stuff = stripeObject.getRawJsonObject().get("data").getAsJsonArray().get(0).getAsJsonObject().get("billing_details").getAsJsonArray().getAsJsonObject().get("email").toString();
+                System.out.println("---- Stuff email: " + stuff);
+
                 // test
                 /*paymentmethod = paymentMethods
                         .getRawJsonObject()
@@ -243,24 +247,25 @@ public class CheckoutController {
                         .get("id")
                         .toString();
                 paymentmethod = paymentmethod.substring(1, paymentmethod.length() -1);*/
-                System.out.println("ready to print payment intent");
-                System.out.println("payment intent : " + intent.toJson());
-                System.out.println("setting payment intent to string");
-                String test = intent.toJson();
+                //System.out.println("ready to print payment intent");
+                //System.out.println("payment intent : " + intent.toJson());
+                //System.out.println("setting payment intent to string");
+                //System.out.println("testing to get intent name: " + intent.getPaymentMethodObject().getCustomer());
+                //String test = intent.toJson();
 
-                System.out.println("\n\n intent json obj: \n----------------------\n" + test + "\n-----------------------\n\n");
+                //System.out.println("\n\n intent json obj: \n----------------------\n" + test + "\n-----------------------\n\n");
 
                 // test done
                 try {
-                    System.out.println("\n\nmeta contains Save card: " + intent.getMetadata().containsKey("save_card")
-                     + "\n\n meta contains key value true: " + intent.getMetadata().containsValue("true") + "\n\n");
+                    //System.out.println("\n\nmeta contains Save card: " + intent.getMetadata().containsKey("save_card")
+                     //+ "\n\n meta contains key value true: " + intent.getMetadata().containsValue("true") + "\n\n");
 
-                    System.out.println("meta value is true: " + intent.getMetadata().get("save_card").contains("true")
-                    + "\n\n meta value: " + intent.getMetadata().get("save_card"));
+                    //System.out.println("meta value is true: " + intent.getMetadata().get("save_card").contains("true")
+                    //+ "\n\n meta value: " + intent.getMetadata().get("save_card"));
 
-                    System.out.println("\n\nmeta userid:" + intent.getMetadata().get("user_id"));
+                    //System.out.println("\n\nmeta userid:" + intent.getMetadata().get("user_id"));
                     if(intent.getMetadata().get("save_card").equals("true")){
-                        System.out.println("Saving Customer...");
+                        //System.out.println("Saving Customer...");
                         // Set the customer parameters using the body we got from stripe
                         Map<String, Object> customerParams = new HashMap<String, Object>();
                         customerParams.put("payment_method", intent.getPaymentMethod());
@@ -269,12 +274,12 @@ public class CheckoutController {
                         Customer customer = null;
 
                         try {
-                            System.out.println("Creating customer");
+                            //System.out.println("Creating customer");
                             // Now tell stripe to create the customer
                             customer = Customer.create(customerParams);
-                            System.out.println("customer created");
-                            System.out.println("customer: " + customer.toJson());
-                            System.out.println("\n now save something in our db :D \n");
+                            //System.out.println("customer created");
+                            //System.out.println("customer: " + customer.toJson());
+                            //System.out.println("\n now save something in our db :D \n");
                             //w probably want to save the customerid and the payment method..
 
                             // Connect to our db and save the stripe customer id
