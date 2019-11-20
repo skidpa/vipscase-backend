@@ -246,6 +246,7 @@ public class CheckoutController {
                 String customerName = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getName();
                 String email = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getEmail();
                 String phone = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getPhone();
+                Address test = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getAddress();
                 //System.out.println("address: " + address);
                 System.out.printf("city: %s\ncountry: %s\nstate: %s\nzipCode: %s\nname: %s\nemail: %s\nphone: %s\n", city, country, state, zipCode, customerName, email, phone);
                 System.out.println("street:" +  street);
@@ -260,6 +261,15 @@ public class CheckoutController {
                 customerParams.put("name", customerName);
                 customerParams.put("phone", phone);
                 customerParams.put("description", "VipsCase web customer");
+
+                Map<String, Object> billingParams = new HashMap<String, Object>();
+                billingParams.put("city", city);
+                billingParams.put("country", country);
+                billingParams.put("line1", street);
+                billingParams.put("postal_code", zipCode);
+                billingParams.put("state", state);
+                customerParams.put("address", billingParams);
+
                 try {
                     customer = Customer.create(customerParams);
                     System.out.println("customer: \n" + customer.toJson());
