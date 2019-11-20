@@ -199,7 +199,7 @@ public class CheckoutController {
             e.printStackTrace();
         }
 
-        //System.out.println("pay load: " + payload);
+        System.out.println("pay load: " + payload);
         System.out.println("Trying stripe stuff");
 
         // Create an event using the stripe body json
@@ -231,7 +231,7 @@ public class CheckoutController {
             * saved card later
             */
             case "payment_intent.succeeded":
-                //System.out.println("payment_intent.succeeded!!");
+                System.out.println("payment_intent.succeeded!!");
                 PaymentIntent intent = (PaymentIntent) stripeObject;
                 // test
                 /*paymentmethod = paymentMethods
@@ -243,23 +243,24 @@ public class CheckoutController {
                         .get("id")
                         .toString();
                 paymentmethod = paymentmethod.substring(1, paymentmethod.length() -1);*/
-
+                System.out.println("ready to print payment intent");
                 System.out.println("payment intent : " + intent.toJson());
+                System.out.println("setting payment intent to string");
                 String test = intent.toJson();
 
                 System.out.println("\n\n intent json obj: \n----------------------\n" + test + "\n-----------------------\n\n");
 
                 // test done
                 try {
-                    /*System.out.println("\n\nmeta contains Save card: " + intent.getMetadata().containsKey("save_card")
+                    System.out.println("\n\nmeta contains Save card: " + intent.getMetadata().containsKey("save_card")
                      + "\n\n meta contains key value true: " + intent.getMetadata().containsValue("true") + "\n\n");
 
                     System.out.println("meta value is true: " + intent.getMetadata().get("save_card").contains("true")
                     + "\n\n meta value: " + intent.getMetadata().get("save_card"));
 
-                    System.out.println("\n\nmeta userid:");*/
+                    System.out.println("\n\nmeta userid:");
                     if(intent.getMetadata().get("save_card").equals("true")){
-                        //System.out.println("Saving Customer...");
+                        System.out.println("Saving Customer...");
                         // Set the customer parameters using the body we got from stripe
                         Map<String, Object> customerParams = new HashMap<String, Object>();
                         customerParams.put("payment_method", intent.getPaymentMethod());
@@ -268,12 +269,12 @@ public class CheckoutController {
                         Customer customer = null;
 
                         try {
-                            //System.out.println("Creating customer");
+                            System.out.println("Creating customer");
                             // Now tell stripe to create the customer
                             customer = Customer.create(customerParams);
-                            //System.out.println("customer created");
-                            //System.out.println("customer: " + customer.toJson());
-                            //System.out.println("\n now save something in our db :D \n");
+                            System.out.println("customer created");
+                            System.out.println("customer: " + customer.toJson());
+                            System.out.println("\n now save something in our db :D \n");
                             //w probably want to save the customerid and the payment method..
 
                             // Connect to our db and save the stripe customer id
@@ -288,24 +289,31 @@ public class CheckoutController {
                             //sdasd
 
                             try {
-                                //System.out.println("\n -- customer to save: " + customerStr);
+                                System.out.println("\n -- trying to save customer: " + customerStr);
                                 pst = conn.prepareStatement(query);
                                 pst.setString(1, customerStr); // set the cus_ str from strip
                                 pst.setInt(2, Integer.parseInt(intent.getMetadata().get("user_id"))); // set the customer id from meta data?
                                 db.insertQuery(conn, pst);
+                                System.out.println("\n -- customer saved: " + customerStr);
                                 //System.out.println("Metadata userid: " + intent.getMetadata().get("user_id"));
 
                                 response.setStatus(201);
                             } catch (SQLException e) {
-                                e.printStackTrace();
+                                System.out.println("----ERROR trying to save customer");
+                                System.out.println(e.getMessage());
+                                //e.printStackTrace();
                                 response.setStatus(400);
                             }
                         } catch (StripeException e) {
-                            e.printStackTrace();
+                            System.out.println("---- ERROR TRYING TO CREATE CUSTOMER");
+                            System.out.println(e.getMessage());
+                            //e.printStackTrace();
                         }
                     }
                 } catch (NullPointerException e) {
-                    e.printStackTrace();
+                    System.out.println("------ ERRRO BIG TRY");
+                    System.out.println(e.getMessage());
+                    //e.printStackTrace();
                 }
                 break;
             default:
