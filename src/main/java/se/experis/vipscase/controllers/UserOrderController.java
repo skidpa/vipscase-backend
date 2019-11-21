@@ -12,6 +12,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.sql.*;
 import java.util.*;
@@ -533,7 +534,7 @@ public class UserOrderController {
      * @return ArrayList<Object[]>, ArrayList of order
      */
     //Lists order by id
-    @GetMapping("/order/{order_id}")
+    /*@GetMapping("/order/{order_id}")
     @ResponseBody
     public ArrayList<Object[]> getOrderById(HttpServletRequest request, HttpServletResponse response, @PathVariable String order_id) {
 
@@ -586,7 +587,7 @@ public class UserOrderController {
 
         //simon
         return results2;
-    }
+    }*/
 
     /**
      * Endpoint which invalidates the current session
@@ -605,7 +606,137 @@ public class UserOrderController {
         response.setStatus(200);
     }
 
-    
+    /**
+     * Endpoint to return a single order by its ID
+     * @param response, to send back status to Client
+     * @param request, to create a new session
+     * @param order_id TODO: Use this, not the userId assigned within the function
+     * @return ArrayList<Object[]>, ArrayList of order
+     */
+    //get order details by order id p-a version
+    @GetMapping("/order/{order_id}")
+    @ResponseBody
+    public ArrayList<Map<String, Object>> getOrderById(HttpServletRequest request, HttpServletResponse response, @PathVariable String order_id) {
+        System.out.println("orderid at top " + order_id);
+
+        Object session = null;
+        HttpSession retrivedSession = request.getSession();
+        session = retrivedSession.getAttribute("Snus");
+
+        if(retrivedSession.getAttribute("Snus") == null){
+            System.out.println("user not logged in aborting");
+            response.setStatus(400);
+            return null;
+        }
+
+        System.out.println("parsing session id to int");
+        int userId = Integer.parseInt(session.toString());
+
+
+        Database db = new Database();
+        Connection conn = db.connectToDb();
+        //String orderIds = "SELECT id FROM orders WHERE customer_id = ?";
+        //String detailsQuery = "SELECT * FROM order_details WHERE order_id = ?";
+        String detailSql = "SELECT product_id FROM order_details WHERE order_id = ?";
+        ArrayList<Integer> prodIds = new ArrayList<>();
+
+        try {
+            PreparedStatement pstmt = conn.prepareStatement(detailSql);
+            pstmt.setInt(1, Integer.parseInt(order_id));
+            ResultSet rs = pstmt.executeQuery();
+
+            while(rs.next()){
+                prodIds.add(rs.getInt("product_id"));
+                //orderJson.put("id", rs.getInt("id"));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            response.setStatus(400);
+        }
+
+        System.out.println("titta i orderid array");
+        String prodSql = "SELECT * FROM products WHERE id = ?";
+        ArrayList<Map<String,Object>> test = new ArrayList<>();
+        for (Integer id: prodIds) {
+            System.out.println("product id: " + id);
+            try {
+                PreparedStatement preparedStatement = conn.prepareStatement(prodSql);
+                preparedStatement.setInt(1, id);
+                ResultSet resultSet = preparedStatement.executeQuery();
+
+                while(resultSet.next()){
+                    System.out.println("-------------\nid: " + resultSet.getInt("id") +
+                            "\nproductname: " + resultSet.getString("productname") +
+                            "\nproductdescription: " + resultSet.getString("productdescription") +
+                            "\nprice: " + resultSet.getString("price") + "\n"
+                            );
+                    Map<String, Object> orderJson = new HashMap<String, Object>();
+                    orderJson.put("id", resultSet.getInt("id"));
+                    orderJson.put("productname", resultSet.getString("productname"));
+                    orderJson.put("productdescription", resultSet.getString("productdescription"));
+                    orderJson.put("price", resultSet.getString("price"));
+                    test.add(orderJson);
+                }
+                response.setStatus(200);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                response.setStatus(400);
+            }
+        }
+        System.out.println("test.size() " + test.size());
+        db.closeConnect(conn);
+        //Object session = request.getSession().getAttribute("se");
+        //int userId = Integer.parseInt(session.toString());
+        /*int userId = 1;
+        Database db = new Database();
+        Connection conn = db.connectToDb();
+        String sqlQuery1 = "SELECT id FROM orders WHERE customer_id = ?";
+        ArrayList<Object[]> results = new ArrayList<>();
+
+        try {
+            PreparedStatement pst = conn.prepareStatement(sqlQuery1);
+            pst.setInt(1, userId); //Behöver eventuellt vara en sträng
+            results = db.retrieveQuery(conn, pst);
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        String id_from_orders, newId, sqlQuery2;
+        ArrayList<Object[]> results2 = new ArrayList<>();
+        Connection conn2 = null;
+        int i = 0;
+        for (Object[] result : results) {
+            id_from_orders = Arrays.toString(result);
+            newId = id_from_orders.substring(1, id_from_orders.length() - 1);
+
+            if (newId.equals(order_id)) {
+
+                sqlQuery2 = "SELECT order_id, product_id, status FROM order_details WHERE order_id = ?";
+
+                try {
+                    conn2 = db.connectToDb();
+                    PreparedStatement pst2 = conn2.prepareStatement(sqlQuery2);
+                    pst2.setInt(1, Integer.parseInt(newId));
+                    results2 = db.retrieveQuery(conn2, pst2);
+                    response.setStatus(200);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                    response.setStatus(400);
+                }
+
+
+                break;
+            }
+        }
+
+
+        //simon
+        return results2;*/
+        return test;
+    }
 
 
 
