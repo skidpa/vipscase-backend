@@ -241,11 +241,11 @@ public class UserOrderController {
                 }
             } else {
                 System.out.println("Hacker be Gone!");
-                response.setStatus(400);
+                response.setStatus(401);
             }
 
         } catch (SQLException e) {
-            response.setStatus(400);
+            response.setStatus(401);
             //e.printStackTrace();
             System.out.println("Something about login is wrong");
         }
