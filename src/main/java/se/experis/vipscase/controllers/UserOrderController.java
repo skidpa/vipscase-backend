@@ -196,7 +196,8 @@ public class UserOrderController {
                     pst2.setString(1, user.getEmail());
                     userCred = db.retrieveQuery(conn2, pst2);
 
-
+// hej
+                    String adadsada ="";
                     usrid = Arrays.toString(userCred.get(0));
                     usrid = usrid.substring(1, usrid.length() -1);
 
