@@ -4,16 +4,12 @@ package se.experis.vipscase.model;
 public class User {
 
     User(){
-        System.out.println("I user och skapar skit");
     }
 
     private int id;
     private String name;
-
     private String password;
-
     private String email;
-
     private String lastname;
     private String street;
     private int postcode;
@@ -22,14 +18,11 @@ public class User {
     private String stripeid;
 
     public int getId() {
-        System.out.println("Fetching id: " + id + " from user");
-
         return id;
     }
 
     public void setId(int id) {
         this.id = id;
-        System.out.println("Sätter ID i user");
     }
 
     public String getName() {

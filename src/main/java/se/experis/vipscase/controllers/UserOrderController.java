@@ -1,19 +1,18 @@
 package se.experis.vipscase.controllers;
 
 import org.springframework.web.bind.annotation.*;
-
 import se.experis.vipscase.model.Order;
 import se.experis.vipscase.model.User;
 import se.experis.vipscase.model.Product;
 import se.experis.vipscase.Database;
-
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.sql.*;
 import java.util.*;
 
+
+//CORS
 @CrossOrigin(
         allowCredentials = "true",
         allowedHeaders = "*",
@@ -46,7 +45,10 @@ public class UserOrderController {
         Connection conn = db.connectToDb();
         String insertQ = "INSERT INTO orders (customer_id) VALUES (?)";
         PreparedStatement pst = null;
+
+
         try {
+            //Retrieves customer id
             pst = conn.prepareStatement(insertQ, Statement.RETURN_GENERATED_KEYS);
             pst.setObject(1, order.getCustomer_id());
             int order_id = db.addOrder(conn, pst);
@@ -56,6 +58,7 @@ public class UserOrderController {
             Connection conn2 = null;
             String insertQ2;
 
+            //Inserts product into orderdetails
             for (int i = 0; i < order.getProduct_id().size(); i++) {
                 conn2 = db2.connectToDb();
                 insertQ2 = "INSERT INTO order_details (order_id, product_id, status) " +
@@ -64,7 +67,7 @@ public class UserOrderController {
                 try {
                     pst2 = conn.prepareStatement(insertQ2);
                     pst2.setInt(1, order_id);
-                    pst2.setInt(2,Integer.parseInt(order.getProduct_id().get(i).toString())); //????
+                    pst2.setInt(2,Integer.parseInt(order.getProduct_id().get(i).toString()));
                     pst2.setString(3, order.getStatus());
                     db.addOrderDetails(conn2, pst2);
 
@@ -98,6 +101,7 @@ public class UserOrderController {
                 "VALUES (?,?,?,?,?,?,?,?)";
         int usrId = 0;
         try {
+            //Using prepared statement to mitigate sql injections
             PreparedStatement pst = conn.prepareStatement(insertQ, Statement.RETURN_GENERATED_KEYS);
             pst.setString(1, user.getName());
             pst.setString(2, cpass);
@@ -135,6 +139,7 @@ public class UserOrderController {
 
         ArrayList<Object[]> results = new ArrayList<>();
         try {
+            //Using prepared statement to mitigate sql injections
             PreparedStatement pst = conn.prepareStatement(sql);
             pst.setString(1, product.getProductname());
             pst.setString(2, product.getProductdescription());
@@ -168,14 +173,15 @@ public class UserOrderController {
         Connection conn = db.connectToDb();
         String sql = "SELECT customerpass FROM customers WHERE email= ?";
         try {
+            //Using prepared statement to mitigate sql injections
 
             PreparedStatement pst = conn.prepareStatement(sql);
             pst.setString(1, user.getEmail());
             userCred = db.retrieveQuery(conn, pst);
-
+            //Parses string to required format
             dbPass = Arrays.toString(userCred.get(0));
             dbPass = dbPass.substring(1, dbPass.length() -1);
-
+            //Hashes the password
             newHashed = db.hashStuff(user.getPassword());
             Connection conn2 = db.connectToDb();
 
@@ -190,7 +196,7 @@ public class UserOrderController {
                     String usrid = Arrays.toString(userCred.get(0));
                     usrid = usrid.substring(1, usrid.length() -1);
 
-                    //Sessions
+                    //Creating a session for the current user
                     HttpSession sess = request.getSession();
                     sess.setAttribute("Snus", usrid);
                     sess.setMaxInactiveInterval(15*60);
@@ -215,16 +221,21 @@ public class UserOrderController {
 
     }
 
-
+    /**
+     * Performs a test to see if a user is logged in
+     * @param req, the HttpServlet request
+     * @param resp, the HttpServlet response
+     * @return the customer ID of the active user
+     */
 
     @GetMapping("/loggedin")
     public int isLoggedIn(HttpServletRequest req, HttpServletResponse resp){
+
         Object sess = null;
         int returnInt = 0;
         HttpSession retrievedSession = req.getSession();
         sess = retrievedSession.getAttribute("Snus");
         if (retrievedSession.getAttribute("Snus") == null){
-            System.out.println("new customer without login");
             resp.setStatus(200);
             return returnInt;
         }
@@ -237,7 +248,7 @@ public class UserOrderController {
     }
 
     /**
-     *  Endpoint which retrieves every product from the database.
+     * Endpoint which retrieves every product from the database.
      * @param response, to send back status to Client
      * @return ArrayList<Object[]>, ArrayList of produts
      */
@@ -248,6 +259,7 @@ public class UserOrderController {
         Connection conn = db.connectToDb();
         ArrayList<Object[]> results = new ArrayList<>();
         try {
+            //Selects every product from the database
             PreparedStatement pst = conn.prepareStatement(query);
             results = db.retrieveQuery(conn, pst);
             response.setStatus(200);
@@ -277,19 +289,21 @@ public class UserOrderController {
         PreparedStatement pst = null;
         int randInt = 0;
         try {
+            //Counts number of rows in the products table
             PreparedStatement pst2 = conn.prepareStatement(countQuery);
             nrOfRows = db.retrieveQuery(conn, pst2);
-
+            //Creates connections and randomizes elements
             for (int i = 0; i < 4; i++) {
                 conn = db.connectToDb();
                 Random r = new Random();
-
+                //Adding randomized products to finalResults
                 try {
                     randInt = r.nextInt(nrOfRows.size() - 1) + 1;
                     id_from_orders = Arrays.toString(nrOfRows.get(randInt));
                     newId = id_from_orders.substring(1, id_from_orders.length() - 1);
                     results.add(newId);
 
+                    //Using prepared statement to mitigate sql injections
                     pst = conn.prepareStatement(finalQuery);
                     pst.setInt(1, Integer.parseInt(results.get(i)));
 
@@ -324,19 +338,23 @@ public class UserOrderController {
         String resultString = "";
         ArrayList<Object[]> results = new ArrayList<>();
 
+
         HttpSession retrievedSession = request.getSession();
 
-        // If session not found
+        // Returns empty string if session not found
         if (retrievedSession.getAttribute("Snus") == null){
             response.setStatus(200);
             return resultString;
         }
 
+        //Retrieves the active session
         Object sess = retrievedSession.getAttribute("Snus");
         int userId = Integer.parseInt(sess.toString());
         if (userId > 0) {
-            String sqlQuery = "SELECT stripeid FROM customers WHERE id = ?";
 
+            //Retrieves stripe id from customer table
+            //Preparedstatement to mitigate sql injections
+            String sqlQuery = "SELECT stripeid FROM customers WHERE id = ?";
             try {
                 PreparedStatement pst = conn.prepareStatement(sqlQuery);
                 pst.setInt(1, userId);
@@ -344,18 +362,15 @@ public class UserOrderController {
 
             } catch (SQLException e) {
                 e.getMessage();
-            }
+            }//If the string contains the keyword: cus, add to resultString
             if (Arrays.toString(results.get(0)).contains("cus")) {
                 resultString = Arrays.toString(results.get(0)).substring(1, Arrays.toString(results.get(0)).length() - 1);
                 response.setStatus(200);
 
             } else {
                 response.setStatus(200);
-                // accepted because the user has not saved their card
             }
         }
-
-
         return resultString;
 
     }
@@ -375,13 +390,14 @@ public class UserOrderController {
         Connection conn = db.connectToDb();
         ArrayList<ArrayList<Object[]>> finalResults = new ArrayList<>();
 
+        //Retrieves the current session
         HttpSession retrievedSession = request.getSession();
         Object sess = retrievedSession.getAttribute("Snus");
 
         int userId = Integer.parseInt(sess.toString());
-
         if (userId > 0) {
 
+            //Retrieves a single customer from db
             ArrayList<Object[]> results = new ArrayList<>();
             String sqlQuery = "SELECT id FROM orders WHERE customer_id = ?";
             try {
@@ -436,7 +452,7 @@ public class UserOrderController {
      */
     @GetMapping("/logout")
     public void logout(HttpServletRequest request, HttpServletResponse response){
-
+        //Invalidates the session
         HttpSession session;
         session = request.getSession();
         session.invalidate();
@@ -454,25 +470,28 @@ public class UserOrderController {
     @ResponseBody
     public ArrayList<Map<String, Object>> getOrderById(HttpServletRequest request, HttpServletResponse response, @PathVariable String order_id) {
 
+        //Retrieves the active session
         Object session = null;
         HttpSession retrivedSession = request.getSession();
         session = retrivedSession.getAttribute("Snus");
 
+        //If it doesn't exist, return null
         if(retrivedSession.getAttribute("Snus") == null){
             response.setStatus(400);
             return null;
         }
 
+        //Retrieves product id's from order_details tables
         Database db = new Database();
         Connection conn = db.connectToDb();
-        String detailSql = "SELECT product_id FROM order_details WHERE order_id = ?";
         ArrayList<Integer> prodIds = new ArrayList<>();
-
+        //Mitigating sql injections
+        String detailSql = "SELECT product_id FROM order_details WHERE order_id = ?";
         try {
             PreparedStatement pstmt = conn.prepareStatement(detailSql);
             pstmt.setInt(1, Integer.parseInt(order_id));
             ResultSet rs = pstmt.executeQuery();
-
+            //Getting the next product id
             while(rs.next()){
                 prodIds.add(rs.getInt("product_id"));
             }
@@ -482,6 +501,7 @@ public class UserOrderController {
             response.setStatus(400);
         }
 
+        //Retrieving all products from products with the help of previously collected product id
         String prodSql = "SELECT * FROM products WHERE id = ?";
         ArrayList<Map<String,Object>> test = new ArrayList<>();
         for (Integer id: prodIds) {
@@ -490,12 +510,9 @@ public class UserOrderController {
                 preparedStatement.setInt(1, id);
                 ResultSet resultSet = preparedStatement.executeQuery();
 
+                //Loops through the resultset
                 while(resultSet.next()){
-                    System.out.println("-------------\nid: " + resultSet.getInt("id") +
-                            "\nproductname: " + resultSet.getString("productname") +
-                            "\nproductdescription: " + resultSet.getString("productdescription") +
-                            "\nprice: " + resultSet.getString("price") + "\n"
-                            );
+                    //Creates a map containing id, prodname, proddescription and price of a single item
                     Map<String, Object> orderJson = new HashMap<String, Object>();
                     orderJson.put("id", resultSet.getInt("id"));
                     orderJson.put("productname", resultSet.getString("productname"));
