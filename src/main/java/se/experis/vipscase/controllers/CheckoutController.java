@@ -302,7 +302,6 @@ public class CheckoutController {
                 return "";
         }
 
-        response.setStatus(201);
         return "";
 
     }
