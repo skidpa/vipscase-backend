@@ -9,13 +9,15 @@ public class StripePay {
         EUR, USD;
     }*/
     private String description;
-    private int amount;
+    private long amount;
     //private Currency currency;
     private String stripeEmail;
     private String stripeToken;
     private String idempotencyThing;
     private String token_id;
     private boolean saveCard = false;
+    private String stripeCustomer;
+    private String userId;
 
 
     public StripePay() {
@@ -31,6 +33,22 @@ public class StripePay {
 
     // nya
 
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public String getStripeCustomer() {
+        return stripeCustomer;
+    }
+
+    public void setStripeCustomer(String stripeCustomer) {
+        this.stripeCustomer = stripeCustomer;
+    }
 
     public boolean isSaveCard() {
         return saveCard;
@@ -57,11 +75,11 @@ public class StripePay {
         this.description = description;
     }
 
-    public int getAmount() {
+    public long getAmount() {
         return amount;
     }
 
-    public void setAmount(int amount) {
+    public void setAmount(long amount) {
         this.amount = amount;
     }
 

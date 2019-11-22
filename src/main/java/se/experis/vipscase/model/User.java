@@ -3,23 +3,21 @@ package se.experis.vipscase.model;
 
 public class User {
 
-    User(){}
+    User(){
+    }
 
     private int id;
     private String name;
-
     private String password;
-
     private String email;
-
     private String lastname;
     private String street;
     private int postcode;
     private String city;
     private String birthdate;
+    private String stripeid;
 
     public int getId() {
-
         return id;
     }
 
@@ -44,6 +42,7 @@ public class User {
     }
 
     public String getEmail() {
+        System.out.println();
         return email;
     }
 
@@ -89,6 +88,13 @@ public class User {
 
     public void setBirthdate(String birthdate) {
         this.birthdate = birthdate;
+    }
+    public String getStripeid() {
+        return stripeid;
+    }
+
+    public void setStripeid(String stripeid) {
+        this.stripeid = stripeid;
     }
 
 

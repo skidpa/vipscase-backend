@@ -1,26 +1,20 @@
 package se.experis.vipscase;
-
-
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.sql.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
+
+
 public class Database {
-    private boolean live = true;
+    private boolean live = false;
 
     public Database(){
 
     }
 
     /**
-     *
+     * Performs a query towards the database which expects a response with rows from the db
      * @param conn, The connection provided from connectToDb()
      * @param pst, The prepared query statement from loginUser()
      * @return Returns an ArrayList of objects, containing the response from the database
@@ -28,100 +22,115 @@ public class Database {
 
     public ArrayList<Object[]> retrieveQuery(Connection conn, PreparedStatement pst) {
 
-        //Parameterized query, fixed in UserOrderController
         ArrayList<Object[]> results = new ArrayList<Object[]>();
 
-        
         boolean isResult = false;
         boolean gotResult = false;
         try {
-            System.out.println();
             isResult = pst.execute();
-
         } catch (Exception e) {
-            e.printStackTrace();
+            isResult = false;
+            e.getMessage();
         } finally {
-            do {
-                assert pst != null;
-                try (ResultSet rs = pst.getResultSet()) {
+            while (isResult) {
 
-                    while (rs.next()) {
-                        gotResult = true;
-                        int columns = rs.getMetaData().getColumnCount();
-                        Object[] arr = new Object[columns];
-                        for (int i = 0; i < columns; i++) {
-                            arr[i] = rs.getObject(i+1);
+                try {
+
+                    if (pst.isClosed())
+                    {
+                        //Closed
+                    } else {
+                        try (ResultSet rs = pst.getResultSet()) {
+                            while (rs.next()) {
+                                gotResult = true;
+                                int columns = rs.getMetaData().getColumnCount();
+                                Object[] arr = new Object[columns];
+                                for (int i = 0; i < columns; i++) {
+                                    arr[i] = rs.getObject(i+1);
+                                }
+                                results.add(arr);
+                            }
+
+                        } catch (SQLException e) {
+                            e.getMessage();
+                            break;
+                        } finally {
+                            if(gotResult){
+                                try {
+                                    isResult = pst.getMoreResults();
+                                } catch (SQLException e) {
+                                    e.getMessage();
+                                }
+                            }
                         }
-                        results.add(arr);
                     }
 
                 } catch (SQLException e) {
-                    e.printStackTrace();
-                } finally {
-                    if(gotResult){
-                        try {
-                            isResult = pst.getMoreResults();
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
+                    e.getMessage();
                 }
-
-
-            } while (isResult);
+            }
         }
         closeConnect(conn);
         return results;
-
     }
 
     /**
-     *  @param conn, The connection provided from connectToDb()
+     * Inserts into the database
+     * @param conn, The connection provided from connectToDb()
      * @param pst, The prepared statement from postOrder()
      */
-    public void insertQuery(Connection conn, PreparedStatement pst) {
+    public int insertQuery(Connection conn, PreparedStatement pst) {
 
-
+        int usrId = 0;
         try {
             pst.execute();
+            ResultSet getUsrId = pst.getGeneratedKeys();
+            if (getUsrId.next()) {
+                usrId = getUsrId.getInt(1);
+            }
             closeConnect(conn);
-
             } catch (SQLException e) {
-            e.printStackTrace();
+            e.getMessage();
         }
+        return usrId;
     }
 
+    /**
+     * Retrieves ID from a given user
+     * @param conn
+     * @param pst
+     * @return
+     */
     public int addOrder(Connection conn, PreparedStatement pst) {
-        //String insertQ = "INSERT INTO orders (customer_id) VALUES ('"+ customer_id + "')";
-        //System.out.println(insertQ);
+
         int order_id = 0;
         try {
-            //PreparedStatement pst = conn.prepareStatement(insertQ, Statement.RETURN_GENERATED_KEYS);
             pst.execute();
-
             ResultSet getId = pst.getGeneratedKeys();
             if(getId.next()){
-                System.out.println("the newly inserted id: " + getId.getInt(1));
                 order_id = getId.getInt(1);
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.getMessage();
         }
         return order_id;
     }
+
+    /**
+     * Adds order details for a given user
+     * @param conn, the connection
+     * @param pst, the prepared statement
+     */
 
     public void addOrderDetails(Connection conn, PreparedStatement pst) {
 
         try {
                 pst.execute();
             } catch (SQLException ex) {
-            ex.printStackTrace();
+            ex.getMessage();
         }
-
         closeConnect(conn);
-
     }
   
     public Connection connectToDb() {
@@ -153,6 +162,10 @@ public class Database {
 
     }
 
+    /**
+     * Closes the open connection
+     * @param conn, the connection
+     */
     public void closeConnect(Connection conn) {
         try {
             conn.close();
@@ -162,6 +175,12 @@ public class Database {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Hashes a string, pass, with sha-512
+     * @param pass, the string to hash
+     * @return hashtext, returns the hashed string
+     */
 
     public String hashStuff(String pass)  {
         String hashtext = "";
@@ -182,9 +201,5 @@ public class Database {
             e.printStackTrace();
         }
         return hashtext;
-
     }
-
-
-
 }
