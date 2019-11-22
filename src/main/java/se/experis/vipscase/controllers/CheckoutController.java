@@ -116,6 +116,7 @@ public class CheckoutController {
             return intent.toJson();
         } catch (StripeException e) {
             System.out.println("Error code is : " + e.getCode() + "\n" +e.getMessage());
+            response.setStatus(400);
             return null;
         }
     }
