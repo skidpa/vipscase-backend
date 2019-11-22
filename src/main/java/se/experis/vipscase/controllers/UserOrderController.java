@@ -53,7 +53,6 @@ public class UserOrderController {
         System.out.println(order.toString());
         Database db = new Database();
         Connection conn = db.connectToDb();
-        //TODO: add atomic operations?
         String insertQ = "INSERT INTO orders (customer_id) VALUES (?)";
         PreparedStatement pst = null;
         try {
@@ -167,7 +166,6 @@ public class UserOrderController {
      * Endpoint which handles login for a user. Retrieves hashed password from database if email can be found
      * and compares the stored hash with a new hash for a given password. If the hashes match, user ID is retrieved
      * and a session is created, as well as a cookie containing that user's ID.
-     * TODO: Change the cookie to only contain boolean values for logged in / logged out.
      *
      * @param response, to send back status to Client
      * @param request, to create a new session
@@ -201,25 +199,24 @@ public class UserOrderController {
             newHashed = db.hashStuff(user.getPassword());
             System.out.println("Try: newhashed: " + newHashed);
 
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        Connection conn2 = db.connectToDb();
-        if(newHashed.equals(dbPass)) {
-            System.out.println("Lösenord stämmer, kollar ID i password checken");
-            String userSql = "SELECT id FROM customers WHERE email= ?";
-            try {
-                PreparedStatement pst2 = conn2.prepareStatement(userSql);
-                pst2.setString(1, user.getEmail());
-                userCred = db.retrieveQuery(conn2, pst2);
 
-                String usrid = Arrays.toString(userCred.get(0));
-                usrid = usrid.substring(1, usrid.length() -1);
-                System.out.println("User id: " + usrid);
+            //Var utanför catch tidigare
+            Connection conn2 = db.connectToDb();
+            if(newHashed.equals(dbPass)) {
+                System.out.println("Lösenord stämmer, kollar ID i password checken");
+                String userSql = "SELECT id FROM customers WHERE email= ?";
+                try {
+                    PreparedStatement pst2 = conn2.prepareStatement(userSql);
+                    pst2.setString(1, user.getEmail());
+                    userCred = db.retrieveQuery(conn2, pst2);
+
+                    String usrid = Arrays.toString(userCred.get(0));
+                    usrid = usrid.substring(1, usrid.length() -1);
+                    System.out.println("User id: " + usrid);
 
 
-                //Sessions
-                HttpSession sess = request.getSession();
+                    //Sessions
+                    HttpSession sess = request.getSession();
 
                     System.out.println("New session created for user with static ID: " + usrid);
                     System.out.println("Session ID: " + sess.getId());
@@ -239,13 +236,20 @@ public class UserOrderController {
                     response.addCookie(loginCookie);
                     response.setStatus(200);
 
-            } catch (SQLException e) {
-                e.printStackTrace();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                System.out.println("Hacker be Gone!");
+                response.setStatus(400);
             }
-        } else {
-            System.out.println("Hacker be Gone!");
-            response.setStatus(401);
+
+        } catch (SQLException e) {
+            response.setStatus(400);
+            //e.printStackTrace();
+            System.out.println("Something about login is wrong");
         }
+
     }
 
 
@@ -477,8 +481,10 @@ public class UserOrderController {
 
             } catch (SQLException e) {
                 System.out.println("290");
+                response.setStatus(400);
 
                 e.printStackTrace();
+                return null;
             }
 
             //Retrieves an array list of objects containing every order_id for customer.
@@ -610,7 +616,7 @@ public class UserOrderController {
      * Endpoint to return a single order by its ID
      * @param response, to send back status to Client
      * @param request, to create a new session
-     * @param order_id TODO: Use this, not the userId assigned within the function
+     * @param order_id provided in the request
      * @return ArrayList<Object[]>, ArrayList of order
      */
     //get order details by order id p-a version
@@ -686,55 +692,7 @@ public class UserOrderController {
         }
         System.out.println("test.size() " + test.size());
         db.closeConnect(conn);
-        //Object session = request.getSession().getAttribute("se");
-        //int userId = Integer.parseInt(session.toString());
-        /*int userId = 1;
-        Database db = new Database();
-        Connection conn = db.connectToDb();
-        String sqlQuery1 = "SELECT id FROM orders WHERE customer_id = ?";
-        ArrayList<Object[]> results = new ArrayList<>();
 
-        try {
-            PreparedStatement pst = conn.prepareStatement(sqlQuery1);
-            pst.setInt(1, userId); //Behöver eventuellt vara en sträng
-            results = db.retrieveQuery(conn, pst);
-
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        String id_from_orders, newId, sqlQuery2;
-        ArrayList<Object[]> results2 = new ArrayList<>();
-        Connection conn2 = null;
-        int i = 0;
-        for (Object[] result : results) {
-            id_from_orders = Arrays.toString(result);
-            newId = id_from_orders.substring(1, id_from_orders.length() - 1);
-
-            if (newId.equals(order_id)) {
-
-                sqlQuery2 = "SELECT order_id, product_id, status FROM order_details WHERE order_id = ?";
-
-                try {
-                    conn2 = db.connectToDb();
-                    PreparedStatement pst2 = conn2.prepareStatement(sqlQuery2);
-                    pst2.setInt(1, Integer.parseInt(newId));
-                    results2 = db.retrieveQuery(conn2, pst2);
-                    response.setStatus(200);
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                    response.setStatus(400);
-                }
-
-
-                break;
-            }
-        }
-
-
-        //simon
-        return results2;*/
         return test;
     }
 

@@ -43,11 +43,14 @@ public class Database {
         try {
             //System.out.println();
             isResult = pst.execute();
+            System.out.println("Is result: ");
+            System.out.println(isResult);
 
         } catch (Exception e) {
+            isResult = false;
             e.printStackTrace();
         } finally {
-            do {
+            while (isResult) {
                 /*try {
                     System.out.println("2");
 
@@ -55,10 +58,20 @@ public class Database {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }*/
-                assert pst != null;
-                try (ResultSet rs = pst.getResultSet()) {
+                //assert pst != null;
+                try {
+                    System.out.println("3");
 
-                    while (rs.next()) {
+                    if (pst.isClosed())
+                    {
+                        System.out.println("Här vare stängt");
+
+                    } else {
+                        System.out.println("4");
+
+                        try (ResultSet rs = pst.getResultSet()) {
+
+                            while (rs.next()) {
                        /* try {
                             System.out.println("3");
 
@@ -66,30 +79,37 @@ public class Database {
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }*/
-                        gotResult = true;
-                        int columns = rs.getMetaData().getColumnCount();
-                        Object[] arr = new Object[columns];
-                        for (int i = 0; i < columns; i++) {
-                            arr[i] = rs.getObject(i+1);
+                                gotResult = true;
+                                int columns = rs.getMetaData().getColumnCount();
+                                Object[] arr = new Object[columns];
+                                for (int i = 0; i < columns; i++) {
+                                    arr[i] = rs.getObject(i+1);
+                                }
+                                results.add(arr);
+                            }
+
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                            return null;
+                        } finally {
+                            if(gotResult){
+                                try {
+                                    isResult = pst.getMoreResults();
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
                         }
-                        results.add(arr);
+
                     }
 
                 } catch (SQLException e) {
                     e.printStackTrace();
-                } finally {
-                    if(gotResult){
-                        try {
-                            isResult = pst.getMoreResults();
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
                 }
 
 
-            } while (isResult);
+            }
         }
         closeConnect(conn);
         return results;
