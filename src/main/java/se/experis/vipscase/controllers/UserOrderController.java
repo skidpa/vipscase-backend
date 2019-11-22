@@ -30,6 +30,7 @@ public class UserOrderController {
     }
 
 
+
     /**
      * Endpoint which handles the insertion of orders into the database. Returns 201 (Created) as success
      * and 400 (Bad request) if errors occured.
@@ -170,7 +171,9 @@ public class UserOrderController {
         Database db = new Database();
         ArrayList<Object[]> userCred = new ArrayList<>();
         String newHashed = "", dbPass = "";
+
         Connection conn = db.connectToDb();
+        String usrid = "";
         String sql = "SELECT customerpass FROM customers WHERE email= ?";
         try {
             //Using prepared statement to mitigate sql injections
@@ -192,6 +195,7 @@ public class UserOrderController {
                     PreparedStatement pst2 = conn2.prepareStatement(userSql);
                     pst2.setString(1, user.getEmail());
                     userCred = db.retrieveQuery(conn2, pst2);
+
 
                     String usrid = Arrays.toString(userCred.get(0));
                     usrid = usrid.substring(1, usrid.length() -1);
@@ -219,6 +223,7 @@ public class UserOrderController {
             response.setStatus(401);
         }
 
+        //PA
     }
 
     /**
@@ -336,6 +341,7 @@ public class UserOrderController {
         Database db = new Database();
         Connection conn = db.connectToDb();
         String resultString = "";
+
         ArrayList<Object[]> results = new ArrayList<>();
 
 
