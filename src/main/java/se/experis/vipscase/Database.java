@@ -1,18 +1,10 @@
 package se.experis.vipscase;
-
-
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.sql.*;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.concurrent.TimeUnit;
+
 
 public class Database {
     private boolean live = false;
@@ -22,7 +14,7 @@ public class Database {
     }
 
     /**
-     *
+     * Performs a query towards the database which expects a response with rows from the db
      * @param conn, The connection provided from connectToDb()
      * @param pst, The prepared query statement from loginUser()
      * @return Returns an ArrayList of objects, containing the response from the database
@@ -83,7 +75,8 @@ public class Database {
     }
 
     /**
-     *  @param conn, The connection provided from connectToDb()
+     * Inserts into the database
+     * @param conn, The connection provided from connectToDb()
      * @param pst, The prepared statement from postOrder()
      */
     public int insertQuery(Connection conn, PreparedStatement pst) {
@@ -102,8 +95,13 @@ public class Database {
         return usrId;
     }
 
+    /**
+     * Retrieves ID from a given user
+     * @param conn
+     * @param pst
+     * @return
+     */
     public int addOrder(Connection conn, PreparedStatement pst) {
-
 
         int order_id = 0;
         try {
@@ -118,6 +116,12 @@ public class Database {
         }
         return order_id;
     }
+
+    /**
+     * Adds order details for a given user
+     * @param conn, the connection
+     * @param pst, the prepared statement
+     */
 
     public void addOrderDetails(Connection conn, PreparedStatement pst) {
 
@@ -158,6 +162,10 @@ public class Database {
 
     }
 
+    /**
+     * Closes the open connection
+     * @param conn, the connection
+     */
     public void closeConnect(Connection conn) {
         try {
             conn.close();
@@ -167,6 +175,12 @@ public class Database {
             e.printStackTrace();
         }
     }
+
+    /**
+     * Hashes a string, pass, with sha-512
+     * @param pass, the string to hash
+     * @return hashtext, returns the hashed string
+     */
 
     public String hashStuff(String pass)  {
         String hashtext = "";

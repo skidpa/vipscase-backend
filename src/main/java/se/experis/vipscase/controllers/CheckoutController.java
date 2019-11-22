@@ -74,7 +74,7 @@ public class CheckoutController {
         try {
             paymentMethods = PaymentMethod.list(listParams);
         } catch (StripeException e) {
-            e.printStackTrace();
+            System.out.println("ERROR Exception: " + e.getMessage());
         }
         //Convert the paymentMethod we got from stripe and get the payment method id so that we can charge the card
         String paymentmethod = null;
@@ -89,19 +89,18 @@ public class CheckoutController {
                     .toString();
             paymentmethod = paymentmethod.substring(1, paymentmethod.length() -1);
         } catch (Exception e) {
-            //e.printStackTrace();
+            System.out.println("ERROR Exception: " + e.getMessage());
         }
-
-        System.out.println("Payment Method: " + paymentmethod);
 
         PaymentIntentCreateParams createParams = null;
 
         PaymentIntent intent = null;
         try {
+            // set idempotence
             RequestOptions options = RequestOptions.builder()
                     .setIdempotencyKey(pay.getIdempotencyThing())
                     .build();
-
+            // set the paymentIntent parameters
             createParams = new PaymentIntentCreateParams.Builder()
                     .setCurrency("sek")
                     .setAmount(pay.getAmount())
@@ -115,7 +114,7 @@ public class CheckoutController {
             response.setStatus(200);
             return intent.toJson();
         } catch (StripeException e) {
-            System.out.println("Error code is : " + e.getCode() + "\n" +e.getMessage());
+            System.out.println("ERROR Exception: " + e.getMessage());
             response.setStatus(400);
             return null;
         }
@@ -134,18 +133,22 @@ public class CheckoutController {
 
         Stripe.apiKey = stripeKey;
 
-        // Setup the payment variables
+        // Setup the paymentIntent variables
         Map<String, Object> paymentIntentParams = new HashMap<String, Object>();
         paymentIntentParams.put("amount", pay.getAmount());
         paymentIntentParams.put("currency", "sek");
+
+        // Prepare the payment method type
         ArrayList payment_method_types = new ArrayList();
         payment_method_types.add("card");
+
         paymentIntentParams.put("payment_method_types", payment_method_types);
 
         // Setup metadata that the webhook listens for (if logged in and save_card is true the webhook will create a stripe customer and store it in our db)
         Map<String, String> initalMetadata = new HashMap<String, String>();
         initalMetadata.put("save_card", Boolean.toString(pay.isSaveCard()));
         initalMetadata.put("user_id", pay.getUserId());
+
         paymentIntentParams.put("metadata", initalMetadata);
         PaymentIntent intent = null;
 
@@ -156,15 +159,11 @@ public class CheckoutController {
                     .build();
             // create the payment intent that will be sent to stripe for card confirmation and the charging of card
             intent = PaymentIntent.create(paymentIntentParams, options);
-            if(pay.isSaveCard()){ // this comment can probably be deleted :D
-                System.out.println("save the customer...");
-                Map<String, Object> customerParams = new HashMap<String,Object>();
-                System.out.println("setting payment method");
-            }
+
             response.setStatus(201);
             return intent.toJson();
         } catch (StripeException e){
-            e.printStackTrace();
+            System.out.println("ERROR Exception: " + e.getMessage());
             response.setStatus(400);
             return null;
         }
@@ -195,21 +194,16 @@ public class CheckoutController {
                 result.append(line);
             }
 
-            System.out.println(result);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println("ERROR Exception: " + e.getMessage());
         }
-
-        //System.out.println("pay load: " + payload);
-        System.out.println("Trying stripe stuff");
 
         // Create an event using the stripe body json
         Event event = null;
         try {
             event = ApiResource.GSON.fromJson(String.valueOf(result), Event.class);
         } catch (JsonSyntaxException e) {
-            e.printStackTrace();
-            System.out.println("failed to convert to json?");
+            System.out.println("ERROR Exception: " + e.getMessage());
             response.setStatus(400);
             return "";
         }
@@ -218,10 +212,9 @@ public class CheckoutController {
         EventDataObjectDeserializer dataObjectDeserializer = event.getDataObjectDeserializer();
         StripeObject stripeObject = null;
         if(dataObjectDeserializer.getObject().isPresent()){
-            System.out.println("dataObjectDeserializer present...");
             stripeObject = dataObjectDeserializer.getObject().get();
         } else {
-            System.out.println("deserialization failed");
+            System.out.println("ERROR: Deserialization failed");
         }
 
         switch (event.getType()){
@@ -232,13 +225,12 @@ public class CheckoutController {
             * saved card later
             */
             case "payment_intent.succeeded":
-                System.out.println("payment_intent.succeeded!!");
                 PaymentIntent intent = (PaymentIntent) stripeObject;
-                //System.out.println("testing to get billing details");
+
                 // get the url for the reciept
                 String receiptUrl = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getReceiptUrl();
-                //System.out.println("---- receiptUrl: " + receiptUrl);
 
+                // get the customer information
                 String city = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getAddress().getCity();
                 String country = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getAddress().getCountry();
                 String state = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getAddress().getState();
@@ -247,46 +239,20 @@ public class CheckoutController {
                 String customerName = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getName();
                 String email = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getEmail();
                 String phone = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getPhone();
-                Address test = ((PaymentIntent) stripeObject).getCharges().getData().get(0).getBillingDetails().getAddress();
-                //System.out.println("address: " + address);
-                //System.out.printf("city: %s\ncountry: %s\nstate: %s\nzipCode: %s\nname: %s\nemail: %s\nphone: %s\n", city, country, state, zipCode, customerName, email, phone);
-                //System.out.println("street:" +  street);
-
-
-                //System.out.println("---- Stuff email: " + city);
-
-
-                /*
-                try {
-                    customer = Customer.create(customerParams);
-                    System.out.println("customer: \n" + customer.toJson());
-                } catch (StripeException e) {
-                    e.printStackTrace();
-                }*/
-
-
-
 
                 try {
-                    //System.out.println("\n\nmeta contains Save card: " + intent.getMetadata().containsKey("save_card")
-                     //+ "\n\n meta contains key value true: " + intent.getMetadata().containsValue("true") + "\n\n");
 
-                    //System.out.println("meta value is true: " + intent.getMetadata().get("save_card").contains("true")
-                    //+ "\n\n meta value: " + intent.getMetadata().get("save_card"));
-
-                    //System.out.println("\n\nmeta userid:" + intent.getMetadata().get("user_id"));
                     if(intent.getMetadata().get("save_card").equals("true")){
-                        //System.out.println("Saving Customer...");
+
                         // Set the customer parameters using the body we got from stripe
                         Map<String, Object> customerParams = new HashMap<String, Object>();
                         customerParams.put("payment_method", intent.getPaymentMethod());
-                        //Map<String, Object> customerParams = new HashMap<String, Object>();
-                        //customerParams.put("payment_method", intent.getPaymentMethod());
                         customerParams.put("email", email);
                         customerParams.put("name", customerName);
                         customerParams.put("phone", phone);
                         customerParams.put("description", "VipsCase web customer");
 
+                        // Set the customer billing parameters using the stripe body
                         Map<String, Object> billingParams = new HashMap<String, Object>();
                         billingParams.put("city", city);
                         billingParams.put("country", country);
@@ -295,69 +261,47 @@ public class CheckoutController {
                         billingParams.put("state", state);
                         customerParams.put("address", billingParams);
 
-                        //here we can probably do something like put "mail", the email located in the payment method
-                        // we might be able to set Account information details aswell from the payment method stuff
                         Customer customer = null;
 
                         try {
-                            //System.out.println("Creating customer");
                             // Now tell stripe to create the customer
                             customer = Customer.create(customerParams);
-                            //System.out.println("customer created");
-                            //System.out.println("customer: " + customer.toJson());
-                            //System.out.println("\n now save something in our db :D \n");
-                            //w probably want to save the customerid and the payment method..
 
                             // Connect to our db and save the stripe customer id
                             Database db = new Database();
                             Connection conn = db.connectToDb();
                             String query = "UPDATE customers SET stripeid = ? WHERE id = ?";
                             PreparedStatement pst = null;
+
                             // get the stripe customer id from the customer we just created
                             String customerStr = customer.getRawJsonObject()
                                     .get("id")
                                     .getAsString();
-                            //sdasd
 
                             try {
-                                System.out.println("\n -- trying to save customer: " + customerStr);
-                                System.out.println("\n -- with customer id: " + intent.getMetadata().get("user_id"));
                                 pst = conn.prepareStatement(query);
                                 pst.setString(1, customerStr); // set the cus_ str from strip
-                                pst.setInt(2, Integer.parseInt(intent.getMetadata().get("user_id"))); // set the customer id from meta data?
+                                pst.setInt(2, Integer.parseInt(intent.getMetadata().get("user_id"))); // set our customer id from meta data
                                 db.insertQuery(conn, pst);
-                                System.out.println("\n -- customer saved: " + customerStr);
-                                //System.out.println("Metadata userid: " + intent.getMetadata().get("user_id"));
-
                                 response.setStatus(201);
                             } catch (SQLException e) {
-                                System.out.println("----ERROR trying to save customer");
-                                System.out.println(e.getMessage());
-                                //e.printStackTrace();
+                                System.out.println("ERROR Exception: " + e.getMessage());
                                 response.setStatus(400);
                             }
                         } catch (StripeException e) {
-                            System.out.println("---- ERROR TRYING TO CREATE CUSTOMER");
+                            System.out.println("ERROR Exception: " + e.getMessage());
                             response.setStatus(400);
-                            System.out.println(e.getMessage());
-                            //e.printStackTrace();
                         }
                     }
                 } catch (NullPointerException e) {
-                    System.out.println("------ ERRRO BIG TRY");
-                    System.out.println(e.getMessage());
-                    //e.printStackTrace();
+                    System.out.println("ERROR Exception: " + e.getMessage());
                 }
                 break;
             default:
-                response.setStatus(203); //400
+                response.setStatus(204);
                 return "";
         }
 
-
-
-
-        response.setStatus(201);
         return "";
 
     }
