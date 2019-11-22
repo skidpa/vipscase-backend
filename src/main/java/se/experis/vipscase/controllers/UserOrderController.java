@@ -238,7 +238,10 @@ public class UserOrderController {
 
                 } catch (SQLException e) {
                     e.printStackTrace();
-                }
+                    response.setStatus(401);
+                } catch (NullPointerException e){
+                response.setStatus(401);
+            }
             } else {
                 System.out.println("Hacker be Gone!");
                 response.setStatus(401);
@@ -248,6 +251,8 @@ public class UserOrderController {
             response.setStatus(401);
             //e.printStackTrace();
             System.out.println("Something about login is wrong");
+        } catch (NullPointerException e){
+            response.setStatus(401);
         }
 
     }
