@@ -30,55 +30,26 @@ public class Database {
 
     public ArrayList<Object[]> retrieveQuery(Connection conn, PreparedStatement pst) {
 
-        //Parameterized query, fixed in UserOrderController
         ArrayList<Object[]> results = new ArrayList<Object[]>();
-       /* try {
-            System.out.println("1");
-            TimeUnit.SECONDS.sleep(5);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }*/
+
         boolean isResult = false;
         boolean gotResult = false;
         try {
-            //System.out.println();
             isResult = pst.execute();
-            System.out.println("Is result: ");
-            System.out.println(isResult);
-
         } catch (Exception e) {
             isResult = false;
-            e.printStackTrace();
+            e.getMessage();
         } finally {
             while (isResult) {
-                /*try {
-                    System.out.println("2");
 
-                    TimeUnit.SECONDS.sleep(5);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }*/
-                //assert pst != null;
                 try {
-                    System.out.println("3");
 
                     if (pst.isClosed())
                     {
-                        System.out.println("Här vare stängt");
-
+                        //Closed
                     } else {
-                        System.out.println("4");
-
                         try (ResultSet rs = pst.getResultSet()) {
-
                             while (rs.next()) {
-                       /* try {
-                            System.out.println("3");
-
-                            TimeUnit.SECONDS.sleep(5);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }*/
                                 gotResult = true;
                                 int columns = rs.getMetaData().getColumnCount();
                                 Object[] arr = new Object[columns];
@@ -89,31 +60,26 @@ public class Database {
                             }
 
                         } catch (SQLException e) {
-                            e.printStackTrace();
-                            return null;
+                            e.getMessage();
+                            break;
                         } finally {
                             if(gotResult){
                                 try {
                                     isResult = pst.getMoreResults();
                                 } catch (SQLException e) {
-                                    e.printStackTrace();
+                                    e.getMessage();
                                 }
                             }
-
                         }
-
                     }
 
                 } catch (SQLException e) {
-                    e.printStackTrace();
+                    e.getMessage();
                 }
-
-
             }
         }
         closeConnect(conn);
         return results;
-
     }
 
     /**
@@ -121,40 +87,34 @@ public class Database {
      * @param pst, The prepared statement from postOrder()
      */
     public int insertQuery(Connection conn, PreparedStatement pst) {
-        int usrId = 0;
 
+        int usrId = 0;
         try {
             pst.execute();
             ResultSet getUsrId = pst.getGeneratedKeys();
             if (getUsrId.next()) {
-                //System.out.println("---------------the newly inserted id: " + getUsrId.getInt(1));
                 usrId = getUsrId.getInt(1);
             }
-
-
             closeConnect(conn);
             } catch (SQLException e) {
-            e.printStackTrace();
+            e.getMessage();
         }
         return usrId;
     }
 
     public int addOrder(Connection conn, PreparedStatement pst) {
-        //String insertQ = "INSERT INTO orders (customer_id) VALUES ('"+ customer_id + "')";
-        //System.out.println(insertQ);
+
+
         int order_id = 0;
         try {
-            //PreparedStatement pst = conn.prepareStatement(insertQ, Statement.RETURN_GENERATED_KEYS);
             pst.execute();
-
             ResultSet getId = pst.getGeneratedKeys();
             if(getId.next()){
-                //System.out.println("the newly inserted id: " + getId.getInt(1));
                 order_id = getId.getInt(1);
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.getMessage();
         }
         return order_id;
     }
@@ -164,11 +124,9 @@ public class Database {
         try {
                 pst.execute();
             } catch (SQLException ex) {
-            ex.printStackTrace();
+            ex.getMessage();
         }
-
         closeConnect(conn);
-
     }
   
     public Connection connectToDb() {
@@ -229,9 +187,5 @@ public class Database {
             e.printStackTrace();
         }
         return hashtext;
-
     }
-
-
-
 }
