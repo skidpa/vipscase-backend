@@ -197,7 +197,7 @@ public class UserOrderController {
                     userCred = db.retrieveQuery(conn2, pst2);
 
 
-                    String usrid = Arrays.toString(userCred.get(0));
+                    usrid = Arrays.toString(userCred.get(0));
                     usrid = usrid.substring(1, usrid.length() -1);
 
                     //Creating a session for the current user
