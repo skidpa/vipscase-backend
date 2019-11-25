@@ -78,6 +78,7 @@ public class Database {
      * Inserts into the database
      * @param conn, The connection provided from connectToDb()
      * @param pst, The prepared statement from postOrder()
+     * @return usrId, The users id
      */
     public int insertQuery(Connection conn, PreparedStatement pst) {
 
@@ -97,9 +98,9 @@ public class Database {
 
     /**
      * Retrieves ID from a given user
-     * @param conn
-     * @param pst
-     * @return
+     * @param conn, The connection provided from connectToDb()
+     * @param pst, The prepared statement from postOrder()
+     * @return order_id, The orders id
      */
     public int addOrder(Connection conn, PreparedStatement pst) {
 
