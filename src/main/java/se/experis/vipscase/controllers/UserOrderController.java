@@ -88,6 +88,7 @@ public class UserOrderController {
      * and 400 (Bad request) if errors occured.
      * @param response, to send back status to Client
      * @param user, to create a user and insert into the database
+     * @return usrId returns the users id
      */
     @PostMapping("/register/user")
     @ResponseBody
@@ -255,7 +256,7 @@ public class UserOrderController {
     /**
      * Endpoint which retrieves every product from the database.
      * @param response, to send back status to Client
-     * @return ArrayList<Object[]>, ArrayList of produts
+     * @return results, ArrayList of produts
      */
     @GetMapping("/products")
     public ArrayList<Object[]> getAllProduct(HttpServletResponse response) {
@@ -279,7 +280,7 @@ public class UserOrderController {
     /**
      * Endpoint which generates 4 random items from the products table in database.
      * @param response, to send back status to Client
-     * @return ArrayList<Object>, ArrayList of products
+     * @return finalResults, ArrayList of products
      */
     @GetMapping("/randomproducts")
     public ArrayList<ArrayList<Object[]>> getRandomProducts(HttpServletResponse response) {
@@ -387,7 +388,7 @@ public class UserOrderController {
      * Takes advantage of sessions to know which customer makes the request
      * @param response, to send back status to Client
      * @param request, to create a new session
-     * @return
+     * @return finalResults an ArrayList
      */
     @GetMapping("/orders")
     public ArrayList<ArrayList<Object[]>> getOrders(HttpServletRequest request, HttpServletResponse response) {
@@ -470,7 +471,7 @@ public class UserOrderController {
      * @param response, to send back status to Client
      * @param request, to create a new session
      * @param order_id provided in the request
-     * @return ArrayList<Object[]>, ArrayList of order
+     * @return order, ArrayList of order
      */
     @GetMapping("/order/{order_id}")
     @ResponseBody
