@@ -171,32 +171,26 @@ public class CheckoutController {
     }
 
     /**
-     *
-     * @param response
-     * @param request
-     * @param body
-     * @return
+     * A method that retrieves a paymentIntent from stripe and returns the receipt url.
+     * @param response send back status to Client
+     * @param request, to create a new session
+     * @param body json string
+     * @return Map containing the receipt
      */
     @PostMapping("stripe/receipt")
     @ResponseBody
     public Map<String, Object> stripeIntent(HttpServletResponse response, HttpServletRequest request, @RequestBody Object body){
         Stripe.apiKey = stripeKey;
-        System.out.println(body.toString());
-        String[] test = body.toString().split("=");
-        System.out.println(Arrays.toString(test));
-        System.out.println(test[1]);
-        String test2 = test[1].substring(0,test[1].length()-1);
-        System.out.println(test2);
+        String[] bodySplit = body.toString().split("=");
+        String paymentIntentId = bodySplit[1].substring(0, bodySplit[1].length()-1);
 
         try {
-            PaymentIntent intent = PaymentIntent.retrieve(test2);
+            PaymentIntent intent = PaymentIntent.retrieve(paymentIntentId);
             String receiptUrl = intent.getCharges().getData().get(0).getReceiptUrl();
-            System.out.println("receipt" + receiptUrl);
             Map<String, Object> receipt = new HashMap<String, Object>();
             receipt.put("url", receiptUrl);
             response.setStatus(200);
             return receipt;
-            //System.out.println("intent\n" + intent);
         } catch (StripeException e) {
             e.printStackTrace();
             response.setStatus(400);
