@@ -1,5 +1,7 @@
 package se.experis.vipscase.controllers;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.stripe.Stripe;
@@ -11,12 +13,14 @@ import com.stripe.net.RequestOptions;
 import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.PaymentMethodListParams;
 import com.stripe.param.PaymentMethodRetrieveParams;
+import jdk.nashorn.internal.parser.JSONParser;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import se.experis.vipscase.Database;
 import se.experis.vipscase.model.StripePay;
 
+import javax.print.DocFlavor;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
@@ -26,10 +30,7 @@ import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @CrossOrigin(
         allowCredentials = "true",
@@ -167,6 +168,41 @@ public class CheckoutController {
             response.setStatus(400);
             return null;
         }
+    }
+
+    /**
+     *
+     * @param response
+     * @param request
+     * @param body
+     * @return
+     */
+    @PostMapping("stripe/receipt")
+    @ResponseBody
+    public Map<String, Object> stripeIntent(HttpServletResponse response, HttpServletRequest request, @RequestBody Object body){
+        Stripe.apiKey = stripeKey;
+        System.out.println(body.toString());
+        String[] test = body.toString().split("=");
+        System.out.println(Arrays.toString(test));
+        System.out.println(test[1]);
+        String test2 = test[1].substring(0,test[1].length()-1);
+        System.out.println(test2);
+
+        try {
+            PaymentIntent intent = PaymentIntent.retrieve(test2);
+            String receiptUrl = intent.getCharges().getData().get(0).getReceiptUrl();
+            System.out.println("receipt" + receiptUrl);
+            Map<String, Object> receipt = new HashMap<String, Object>();
+            receipt.put("url", receiptUrl);
+            response.setStatus(200);
+            return receipt;
+            //System.out.println("intent\n" + intent);
+        } catch (StripeException e) {
+            e.printStackTrace();
+            response.setStatus(400);
+        }
+        response.setStatus(200);
+        return null;
     }
 
     /**
