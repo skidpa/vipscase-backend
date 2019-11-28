@@ -1,17 +1,19 @@
 Backend for the https://pa-vips-front.herokuapp.com
 ==================================
 
-# Translations of this document
+# How it works
 
-These are community-provided translations of this document. If you have comments regarding a particular translation, please approach the translation's maintainer.
+The backend written in Java and made up of several endpoints which gets called on by the React frontend app. Most of these either communicate with Stripe (https://stripe.com/en-se) or our Postgres database. 
 
-- [Turkish](https://github.com/umutphp/backend-best-practices) translation by [umutphp](https://github.com/umutphp)
+# Technologies
 
-# N Commandments
+1. Java
+2. Spring boot 
+3. Gradle
+4. Stripe
+5. Postgres
+6. JavaDocs
 
-1. README.md in the root of the repo is the docs
-2. Single command run
-3. Single command deploy
-4. Repeatable and re-creatable builds
-5. Build artifacts bundle a ["Bill of Materials"](#bill-of-materials)
-6. Use [UTC as the timezone](http://yellerapp.com/posts/2015-01-12-the-worst-server-setup-you-can-make.html) all around
+# Get it running
+1. Download the project and cd into the folder src/
+2. Set API key and server port in application.properties
